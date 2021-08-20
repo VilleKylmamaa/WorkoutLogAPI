@@ -27,21 +27,27 @@ An example workout log client utilizing is provided. The client is impolemented 
 
 1. Starting with version 3.3 of Python, all the necessary tools should be automatically included. In case they are not, you need to install [Pip](https://pypi.org/project/pip/).
 
-2. Install required packages (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy) by running the command prompt command
- >'''pip install -e'''
+2. Install required packages (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy) by running the command prompt command:
+ 
+ ```
+ pip install -e
+ ```
+ 
 in the root folder, where the file setup.py is located.
 
 3. To run the API server in localhost, in the root folder, either run the bat file:
 
->start-development-server.bat
+```
+start-development-server.bat
+```
 
 or run commands:
 
->set FLASK_APP=workoutlog
->
->set FLASK_ENV=development
->
->flask run
+```
+set FLASK_APP=workoutlog
+set FLASK_ENV=development
+flask run
+```
 
 4. In a web browser, for the API, go to URL: 
 
@@ -57,13 +63,15 @@ or run commands:
 
 To run the tests for the database and the API, in the root folder, either run the bat file:
 
->run-tests.bat
+```
+run-tests.bat
+```
 
 or run command:
 
->pytest --cov-report term-missing --cov=workoutlog
-
-
+```
+pytest --cov-report term-missing --cov=workoutlog
+```
 
 
 # Documentation
