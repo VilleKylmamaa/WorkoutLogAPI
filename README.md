@@ -2,11 +2,15 @@
 
 The project is for the Programmable Web Summer 2021 course in the University of Oulu.
 
-## PROJECT NAME
+
+
+# PROJECT NAME
 
 Workout Log API
 
-## Group information
+
+
+# Group information
 Student 1. Ville Kylmämaa, email: ville.kylmamaa@gmail.com
 
 ---
@@ -17,7 +21,9 @@ The API is implemented with Flask, is a micro web framework written in Python. T
 
 An example workout log client utilizing is provided. The client is impolemented with HTML, CSS, JavaScript and jQuery.
 
-## Installation
+
+
+# Installation
 
 1. Starting with version 3.3 of Python, all the necessary tools should be automatically included. In case they are not, you need to install [Pip](https://pypi.org/project/pip/).
 
@@ -47,7 +53,7 @@ or run commands:
 
 
 
-## Running tests
+# Running tests
 
 To run the tests for the database and the API, in the root folder, either run the bat file:
 
@@ -60,7 +66,7 @@ or run command:
 
 
 
-## Documentation
+# Documentation
 
 [GitHub Wiki](https://github.com/VilleKylmamaa/WorkoutLogAPI/wiki)
 
