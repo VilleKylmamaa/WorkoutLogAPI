@@ -25,15 +25,14 @@ An example workout log client utilizing is provided. The client is impolemented 
 
 # Installation
 
-1. Starting with version 3.3 of Python, all the necessary tools should be automatically included. In case they are not, you need to install [Pip](https://pypi.org/project/pip/).
+1. If not already installed, install the newest version of [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/).
 
-2. Install required packages (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy) by running the command prompt command:
+2. Install the project and required libraries (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy, etc.). In the root folder, where the file setup.py is located, run the following command prompt commands:
  
  ```
+ pip install -r requirements.txt
  pip install -e
  ```
- 
-in the root folder, where the file setup.py is located.
 
 3. To run the API server in localhost, in the root folder, either run the bat file:
 
@@ -61,7 +60,9 @@ flask run
 
 # Running tests
 
-To run the tests for the database and the API, in the root folder, either run the bat file:
+1. Project and the required libraries should be installed. If not, see above in the installment section.
+
+2. To run the tests for the database and the API, in the root folder, either run the bat file:
 
 ```
 run-tests.bat
