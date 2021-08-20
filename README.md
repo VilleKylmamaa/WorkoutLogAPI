@@ -27,14 +27,35 @@ An example workout log client utilizing is provided. The client is impolemented 
 
 1. If not already installed, install the newest version of [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/).
 
-2. Install the project and required libraries (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy, etc.). In the root folder, where the file setup.py is located, run the following command prompt commands:
+2. (Optional) Use [virtual environment](https://docs.python.org/3/tutorial/venv.html). A virtual environment is a private copy of the Python interpreter onto which you can install packages privately, without affecting the global Python interpreter installed in your system. In the root folder, to create the virtual environment, run the command:
+
+```
+python3 -m venv venv
+```
+
+Then start using the virtual enviroment with the command:
+
+in Windows:
+
+```
+venv\Scripts\activate.bat
+```
+
+in Mac or Linux:
+
+```
+source venv/bin/activate
+```
+
+
+3. Install the project and required libraries (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy, etc.). In the root folder, where the setup.py and requirements.txt files are located, run the following command prompt commands:
  
  ```
  pip install -r requirements.txt
  pip install -e
  ```
 
-3. To run the API server in localhost, in the root folder, either run the bat file:
+4. To run the API server in localhost, in the root folder, either run the bat file:
 
 ```
 start-development-server.bat
@@ -48,11 +69,11 @@ set FLASK_ENV=development
 flask run
 ```
 
-4. In a web browser, for the API, go to URL: 
+5. In a web browser, for the API, go to URL: 
 
 >http://localhost:5000/api/
 
-5. In a web browser, for the client, go to URL:
+6. In a web browser, for the client, go to URL:
 
 >http://localhost:5000/workoutlog/
 
