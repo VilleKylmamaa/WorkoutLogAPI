@@ -77,11 +77,11 @@ flask init-db
 flask testgen
 ```
 
-5. In a web browser, for the API, go to URL: 
+6. Using a web browser, for the API, go to URL: 
 
 >http://localhost:5000/api/
 
-6. In a web browser, for the client, go to URL:
+7. Using a web browser, for the client, go to URL:
 
 >http://localhost:5000/workoutlog/
 
