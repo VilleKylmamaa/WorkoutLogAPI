@@ -55,18 +55,27 @@ source venv/bin/activate
  pip install -e
  ```
 
-4. To run the API server in localhost run the following commands, which will also generate data for the database:
+4. To run the API server in localhost run the bat file:
+
+```
+start-server.bat
+```
+
+or run the following commands:
 
 ```
 set FLASK_APP=workoutlog
 set FLASK_ENV=development
-flask init-db
-flask testgen
 flask run
 ```
 
-The server can also be run with the start-server.bat file. However, it will not generate data.
 
+5. To populate the database with test data, run the following commands:
+
+```
+flask init-db
+flask testgen
+```
 
 5. In a web browser, for the API, go to URL: 
 
