@@ -1,0 +1,139 @@
+
+body {
+    background-color: rgb(4, 7, 14) !important;
+}
+
+main {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1000px;
+    border: 2px solid rgb(44, 44, 44);
+    border-radius: 5px;
+}
+
+section {
+    margin: 20px !important;
+    margin-bottom: 100px !important;
+}
+
+nav {
+    border-radius: 0 0 5px 5px;
+}
+
+.navbar-nav {
+    float:none;
+    margin:0 auto;
+    display: block;
+    text-align: center;
+}
+
+.navbar-nav > li {
+    display: inline-block;
+    float:none;
+}
+ 
+.nav-link {
+    margin: 5px 15px 5px 5px;
+}
+
+
+h1, h2 {
+    text-align: center;
+    margin-top: 25px !important;
+    margin-bottom: 20px !important;
+    color: rgb(239, 250, 136);
+}
+
+
+h3 {
+    text-align: center;
+    margin-top: 20px !important;
+    color: rgb(242, 245, 206);
+}
+
+.workouts_table, .sets_table, .programming_table {
+    margin-top: 10px;
+    border: 1px solid rgb(161, 161, 161) !important;
+    border-collapse: separate;
+    border-left: 0;
+    border-radius: 5px;
+    border-spacing: 0px;
+    text-align: center;
+    vertical-align: middle !important;
+}
+
+thead th {
+    color: hotpink;
+    border: 1px solid rgb(207, 207, 207) !important;
+    background-color: rgb(15, 30, 46) !important;
+}
+
+tbody tr:nth-child(even) {
+    color: #b2ff35;
+}
+
+tbody tr:nth-child(odd) {
+    color: rgb(175, 241, 158) !important;
+}
+th, td {
+    border-left: 1px solid #ddd !important;
+}
+
+thead:first-child tr:first-child th:first-child, tbody:first-child tr:first-child td:first-child {
+    border-radius: 5px 0 0 0 !important;
+}
+
+thead:last-child tr:last-child th:first-child, tbody:last-child tr:last-child td:first-child {
+    border-radius: 0 0 0 5px !important;
+}
+
+.workouts_table a, .sets_table a, .programming_table a {
+    color: cyan;
+    text-decoration: none;
+    transition: 0.25s;
+}
+
+.workouts_table a:hover, .sets_table a:hover, .programming_table a:hover {
+    color: hotpink;
+  }
+
+.workouts button {
+    vertical-align: middle !important;
+}
+
+form {
+    color: rgb(235, 235, 235);
+}
+
+hr {
+    color: rgb(216, 131, 255) !important; 
+    margin-top: 30px !important;  
+    margin-bottom: 30px !important;  
+}
+
+.msg, .error {
+    font-size: 1.25em;
+    margin-top: 30px;
+    margin-bottom: 50px;
+    color: white;
+    text-align: center;
+}
+
+.new_exercise_input {
+    max-width: 250px;
+    text-align: center;
+    margin:auto;
+}
+
+label.new_exercise_input {
+    display: block;
+    text-align: center;
+}
+
+.new_set_submit {
+    width: 140px;
+}
+
+input.form-control {
+    background-color: rgb(232, 241, 241) !important;
+}
