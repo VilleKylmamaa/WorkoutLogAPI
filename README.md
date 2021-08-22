@@ -116,7 +116,7 @@ or run command:
 pytest --cov-report term-missing --cov=workoutlog
 ```
 
-To run db tests individually, add in tests\db_test, or tests\api_test.py for api tests.
+To run db tests individually, add in tests\db_test, or add in tests\api_test.py for api tests.
 
 
 # Documentation
