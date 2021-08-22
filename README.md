@@ -61,7 +61,7 @@ source venv/bin/activate
 start-server.bat
 ```
 
-or run the following commands:
+or run the following commands in the root folder:
 
 ```
 set FLASK_APP=workoutlog
@@ -77,7 +77,7 @@ Note that the start-server.bat file doesn't open virtual environment.
 reset-db.bat
 ```
 
-or run the following commands:
+or run the following commands in the root folder:
 
 ```
 set FLASK_APP=workoutlog
