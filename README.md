@@ -69,6 +69,8 @@ set FLASK_ENV=development
 flask run
 ```
 
+Note that the bat file doesn't open virtual environment.
+
 5. To populate the database run the bat file:
 
 ```
