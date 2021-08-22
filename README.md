@@ -69,15 +69,13 @@ set FLASK_ENV=development
 flask run
 ```
 
-Note that the bat file doesn't open virtual environment.
+Note that the start-server.bat file doesn't open virtual environment.
 
 5. To populate the database run the bat file:
 
 ```
 reset-db.bat
 ```
-
-Note that it also resets the database, i.e. removes all data entries and repopulates it with test data.
 
 or run the following commands:
 
@@ -86,6 +84,8 @@ set FLASK_APP=workoutlog
 flask init-db
 flask testgen
 ```
+
+Note that the reset-db.bat file also resets the database, i.e. removes all data entries and repopulates it with test data. Useful for testing.
 
 
 6. API is now running in localhost:5000.
