@@ -11,5 +11,6 @@ setup(
         "flask-restful",
         "flask-sqlalchemy",
         "SQLAlchemy",
+        "jsonschema"
     ]
 )
