@@ -52,7 +52,7 @@ source venv/bin/activate
  
  ```
  pip install -r requirements.txt
- pip install -e {path/to/the/root-folder}
+ pip install workoutlog
  ```
 
 4. To run the API in localhost run the bat file:
