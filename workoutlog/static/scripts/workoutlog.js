@@ -165,7 +165,8 @@ function renderNavigation(page) {
         "<a id='exercises' class='nav-item nav-link' href='/api/exercises/' " + 
         "onClick='followLink(event, this, renderExercises)'>Exercises</a>" +
         "<a id='program' class='nav-item nav-link' href='/api/weekly-programming/'" + 
-        "onClick='followLink(event, this, renderProgramming)'>Training Program</a>");
+        "onClick='followLink(event, this, 
+        ramming)'>Training Program</a>");
     if (page === "workouts") {
         $(".nav-item").removeClass("active");
         $("#workouts").addClass("active");
@@ -522,8 +523,8 @@ function renderTableForProgrammingCardio() {
 function programmingRowLifting(item) {
     return "<tr>" +
                 "<th>" + item.week_number + "</th>" +
-                "<td>" + item.exercise_type + "</td>" +
                 "<td>" + item.intensity + "</td>" +
+                "<td>" + item.number_of_sets + "</td>" +
                 "<td>" + item.number_of_reps + "</td>" +
                 "<td>" + item.reps_in_reserve + "</td>" +
             "</tr>";
