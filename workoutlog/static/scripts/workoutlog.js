@@ -151,10 +151,6 @@ function deleteWorkout(body) {
 }
 
 
-/* 
-var self_link = "<a href='" + item["@controls"].self.href +
-"' onClick='followLink(event, this, renderWorkout)'>show</a><br>";
- */
 
 /***** Functions for rendering Workouts pages *****/
 
@@ -588,11 +584,6 @@ function renderExercises(body) {
 $(document).ready(function () {
     getResource("http://localhost:5000/api/workouts/", renderWorkouts);
 });
-
-
-
-
-
 
 
 
