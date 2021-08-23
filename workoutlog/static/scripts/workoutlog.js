@@ -165,8 +165,7 @@ function renderNavigation(page) {
         "<a id='exercises' class='nav-item nav-link' href='/api/exercises/' " + 
         "onClick='followLink(event, this, renderExercises)'>Exercises</a>" +
         "<a id='program' class='nav-item nav-link' href='/api/weekly-programming/'" + 
-        "onClick='followLink(event, this, 
-        ramming)'>Training Program</a>");
+        "onClick='followLink(event, this, renderProgramming)'>Training Program</a>");
     if (page === "workouts") {
         $(".nav-item").removeClass("active");
         $("#workouts").addClass("active");
