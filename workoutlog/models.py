@@ -2,7 +2,9 @@ import datetime
 from enum import unique
 import click
 from flask.cli import with_appcontext
+from sqlalchemy import desc
 from workoutlog import db
+
 
 
 #
@@ -34,8 +36,14 @@ class Workout(db.Model):
     max_heart_rate = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.String(1000), nullable=True)
     
-    exercises = db.relationship("Exercise", secondary=exercise_workout_association, back_populates="workouts")
-    sets = db.relationship("Set", cascade="all, delete-orphan", back_populates="workout")
+    exercises = db.relationship("Exercise",
+        secondary=exercise_workout_association,
+        back_populates="workouts"
+    )
+    sets = db.relationship("Set", 
+        cascade="all, delete-orphan", 
+        back_populates="workout"
+    )
     
     @staticmethod
     def get_schema():
@@ -81,15 +89,22 @@ class Exercise(db.Model):
     exercise_name = db.Column(db.String(100), unique=True, nullable=False)
     exercise_type = db.Column(db.String(100), nullable=True)
 
-    workouts = db.relationship("Workout", secondary=exercise_workout_association, back_populates="exercises")
-    sets = db.relationship("Set", cascade="all, delete-orphan", back_populates="exercise")
-    max_data = db.relationship("MaxData", cascade="all, delete-orphan", back_populates="exercise")
-    weekly_programming = db.relationship("WeeklyProgramming", secondary=exercise_programming_association, back_populates="exercises")
-    
-    def __repr__(self):
-        return "Name: {}, Sets: {}, Lift max data: {}".format(
-            self.exercise_name, self.sets, self.max_data
-            )
+    workouts = db.relationship("Workout",
+        secondary=exercise_workout_association,
+        back_populates="exercises"
+    )
+    sets = db.relationship("Set",
+        cascade="all, delete-orphan",
+        back_populates="exercise"
+    )
+    max_data = db.relationship("MaxData",
+        cascade="all, delete-orphan",
+        back_populates="exercise"
+    )
+    weekly_programming = db.relationship("WeeklyProgramming",
+        secondary=exercise_programming_association,
+        back_populates="exercises"
+    )
 
     @staticmethod
     def get_schema():
@@ -118,8 +133,12 @@ class Set(db.Model):
         name="_exercise_session_order_uc"), )
 
     id = db.Column(db.Integer, primary_key=True)
-    exercise_id = db.Column(db.Integer, db.ForeignKey("exercise.id", ondelete="CASCADE"), nullable=False)
-    workout_id = db.Column(db.Integer, db.ForeignKey("workout.workout_id", ondelete="CASCADE"), nullable=False)
+    exercise_id = db.Column(db.Integer, db.ForeignKey("exercise.id",
+        ondelete="CASCADE"), nullable=False
+    )
+    workout_id = db.Column(db.Integer, db.ForeignKey("workout.workout_id",
+        ondelete="CASCADE"), nullable=False
+    )
 
     order_in_workout = db.Column(db.Integer, nullable=False)
     weight = db.Column(db.Float, nullable=True)
@@ -131,12 +150,6 @@ class Set(db.Model):
 
     exercise = db.relationship("Exercise", back_populates="sets")
     workout = db.relationship("Workout", back_populates="sets")
-    
-    def __repr__(self):
-        return "Exercise: {}, Order in workout: {}, Weight: {}, Reps: {}, Reps in reserve: {}, RPE: {}".format(
-            self.exercise.exercise_name, self.order_in_workout, self.weight,
-            self.number_of_reps, self.reps_in_reserve, self.rate_of_perceived_exertion
-            )
 
     @staticmethod
     def get_schema():
@@ -186,31 +199,26 @@ class MaxData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     exercise_id = db.Column(db.Integer, db.ForeignKey("exercise.id", ondelete="CASCADE"))
     order_for_exercise = db.Column(db.Integer, nullable=False)
-    date_time = db.Column(db.DateTime, nullable=False)
+    date = db.Column(db.Date, nullable=False)
     training_max = db.Column(db.Float, nullable=True)
     estimated_max = db.Column(db.Float, nullable=True)
     tested_max = db.Column(db.Float, nullable=True)
 
     exercise = db.relationship("Exercise", back_populates="max_data")
-    
-    def __repr__(self):
-        return "Date: {}, Training max: {}, Estimated max: {}, Tested max: {}".format(
-            self.date_time, self.training_max, self.estimated_max, self.tested_max
-            )
 
     @staticmethod
     def get_schema():
         schema = {
             "type": "object",
-            "required": ["date_time"]
+            "required": ["date"]
         }
         props = schema["properties"] = {}
         props["order_for_exercise"] = {
             "description": "Order number of the max data for the exercise. Automatic.",
             "type": "integer"
         }
-        props["date_time"] = {
-            "description": "Date and time of the max data",
+        props["date"] = {
+            "description": "Date of the max data",
             "type": "string"
         }
         props["training_max"] = {
@@ -602,31 +610,63 @@ def insert_initial_data(*args, **kwargs):
     db.session.add(MaxData(
         exercise=squat,
         order_for_exercise=1,
-        date_time=datetime.datetime(2021, 8, 10, 14),
-        training_max=140
+        date=datetime.datetime(2020, 10, 10, 14),
+        estimated_max=110
         ))
     db.session.add(MaxData(
         exercise=squat,
         order_for_exercise=2,
-        date_time=datetime.datetime(2021, 8, 14, 16),
-        training_max=145
+        date=datetime.datetime(2020, 12, 14, 16),
+        estimated_max=125
         ))
+    db.session.add(MaxData(
+        exercise=squat,
+        order_for_exercise=3,
+        date=datetime.datetime(2021, 2, 14, 16),
+        estimated_max=120
+        ))
+    db.session.add(MaxData(
+        exercise=squat,
+        order_for_exercise=4,
+        date=datetime.datetime(2021, 4, 14),
+        estimated_max=130
+        ))
+    db.session.add(MaxData(
+        exercise=squat,
+        order_for_exercise=5,
+        date=datetime.datetime(2021, 6, 14),
+        estimated_max=132.5
+        ))
+    db.session.add(MaxData(
+        exercise=squat,
+        order_for_exercise=6,
+        date=datetime.datetime(2021, 8, 14),
+        estimated_max=145
+        ))
+
     db.session.add(MaxData(
         exercise=bench,
         order_for_exercise=1,
-        date_time=datetime.datetime(2021, 8, 10, 14),
-        training_max=85
+        date=datetime.datetime(2021, 6, 10),
+        estimated_max=85
         ))
+    db.session.add(MaxData(
+        exercise=bench,
+        order_for_exercise=2,
+        date=datetime.datetime(2021, 8, 10),
+        estimated_max=90
+        ))
+
     db.session.add(MaxData(
         exercise=deadlift,
         order_for_exercise=1,
-        date_time=datetime.datetime(2021, 8, 12, 12),
+        date=datetime.datetime(2021, 8, 12),
         training_max=180
         ))
     db.session.add(MaxData(
         exercise=ohp,
         order_for_exercise=1,
-        date_time=datetime.datetime(2021, 8, 12, 12),
+        date=datetime.datetime(2021, 8, 12),
         training_max=60
         ))
 
