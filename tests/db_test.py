@@ -483,7 +483,6 @@ def test_cli_init(app):
     result = runner.invoke(init_db_command)
     assert result
 
-
 def test_cli_delete(app):
     """
     Tests that delete_db_command exists
