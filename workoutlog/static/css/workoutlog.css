@@ -39,19 +39,26 @@ nav {
 
 h1, h2 {
     text-align: center;
-    margin-top: 25px !important;
-    margin-bottom: 20px !important;
+    margin-top: 30px !important;
+    margin-bottom: 25px !important;
     color: rgb(239, 250, 136);
 }
 
 
 h3 {
     text-align: center;
-    margin-top: 20px !important;
+    margin-top: 30px !important;
     color: rgb(242, 245, 206);
 }
 
-.workouts_table, .sets_table, .programming_table {
+h4 {
+    text-align: center;
+    margin-top: 25px !important;
+    margin-bottom: 20px !important;
+    color: rgb(255, 214, 255);
+}
+
+.workouts_table, .sets_table, .exercise_table, .programming_table {
     margin-top: 10px;
     border: 1px solid rgb(161, 161, 161) !important;
     border-collapse: separate;
@@ -79,21 +86,26 @@ th, td {
     border-left: 1px solid #ddd !important;
 }
 
-thead:first-child tr:first-child th:first-child, tbody:first-child tr:first-child td:first-child {
+thead:first-child tr:first-child th:first-child,
+tbody:first-child tr:first-child td:first-child {
     border-radius: 5px 0 0 0 !important;
 }
 
-thead:last-child tr:last-child th:first-child, tbody:last-child tr:last-child td:first-child {
+thead:last-child tr:last-child th:first-child,
+tbody:last-child tr:last-child td:first-child {
     border-radius: 0 0 0 5px !important;
 }
 
-.workouts_table a, .sets_table a, .programming_table a {
+.workouts_table a, .sets_table a, .programming_table a, .exercise_table a {
     color: cyan;
     text-decoration: none;
     transition: 0.25s;
 }
 
-.workouts_table a:hover, .sets_table a:hover, .programming_table a:hover {
+.workouts_table a:hover,
+.sets_table a:hover,
+.programming_table a:hover,
+.exercise_table a:hover {
     color: hotpink;
   }
 
@@ -136,4 +148,8 @@ label.new_exercise_input {
 
 input.form-control {
     background-color: rgb(232, 241, 241) !important;
+}
+
+.canvasjs-chart-credit {
+    display: none;
 }

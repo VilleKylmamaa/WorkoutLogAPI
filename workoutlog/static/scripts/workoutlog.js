@@ -23,8 +23,7 @@ function getResource(href, renderer) {
     return $.ajax({
         url: href,
         success: renderer,
-        error: renderError,
-        async: false // Temporary, fix show workout page
+        error: renderError
     });
 }
 
@@ -121,7 +120,6 @@ function submitSet(event) {
 }
 
 function getSubmittedSet(data, status, jqxhr) {
-    console.log(data);
     renderMsg("Set added");
     let href = jqxhr.getResponseHeader("Location");
     if (href) {
@@ -178,20 +176,19 @@ function renderTableForWorkouts() {
     $(".content").append(
         "<div class='workouts'>" +
             "<table class='workouts_table table table-striped wrapper table-dark bg-dark'>" +
-                "<thead></thead>" +
+                "<thead>" +
+                    "<tr>" +
+                        "<th>Date</th>" +
+                        "<th>Duration</th>" +
+                        "<th>Body Weight (kg)</th>" +
+                        "<th>Average Heart Rate</th>" +
+                        "<th>Action</th>" +
+                    "</tr>" +
+                "</thead>" +
                 "<tbody></tbody>" +
             "</table>" +
             "<div class='form'></div>" +
         "</div>"
-    );
-    $(".workouts_table thead").last().append(
-        "<tr>" +
-            "<th>Date</th>" +
-            "<th>Duration</th>" +
-            "<th>Body Weight (kg)</th>" +
-            "<th>Average Heart Rate</th>" +
-            "<th>Action</th>" +
-        "</tr>"
     );
 }
 
@@ -258,12 +255,13 @@ function renderWorkout(body) {
 
     // Back button
     let link = body["@controls"].collection.href;
-    content.append("<div class='text-center'><a class='btn btn-dark' href='' " +
-                  "onClick='followLink(event, '" + link + "', renderWorkout)'>" +
-                  "Back to Workouts</a></div>");
+    content.append("<div class='text-center'><a class='btn btn-dark' href='" +
+        link + "' onClick='followLink(event, this, renderWorkouts)'>" +
+        "Back to Workouts</a></div>"
+    );
 
     // Workouts table
-    content.append("<h1>" + body.date_time + "<h2>");
+    content.append("<h1>" + body.date_time + "</h1>");
     renderTableForWorkouts();
     $(".workouts_table tbody").append(workoutRow(body, "switch_actions"));
 
@@ -280,7 +278,7 @@ function renderExercisesWithinWorkout(body) {
     if (body.items.length > 0){
         // Work around the asynchronous nature of ajax calls
         content.append("<h3>" + body.items[0].exercise_name + "</h3>");
-        renderTableForSets();
+        renderTableForSets(body.items[0].exercise_name);
         let i = 1;
         body.items.forEach(function (item) {
             getResource(
@@ -290,11 +288,11 @@ function renderExercisesWithinWorkout(body) {
                 if (i < body.items.length) {
                     let this_exercise = body.items[i].exercise_name;
                     content.append("<h3>" + this_exercise + "</h3>");
-                    renderTableForSets();
+                    renderTableForSets(body.items[i].exercise_name);
                     i++;
                 }
                 // render add exercise form after all sets are rendered
-                else if (i === body.items.length){
+                else if (i === body.items.length) {
                     content.append("<h2>Add Exercise to Workout</h2>");
                     renderAddExerciseForm(body["@controls"]["workoutlog:add-exercise-to-workout"]);
                 }
@@ -306,17 +304,28 @@ function renderExercisesWithinWorkout(body) {
     }
 }
 
-function renderTableForSets() {
-    $(".content").append(
-        "<table class='sets_table table " +
-            "table-striped wrapper table-dark'>" +
-        "<thead><tr>" + 
-            "<th>Set</th>" +
-            "<th>Weight (kg)</th>" +
-            "<th>Reps</th>" +
-            "<th>RIR</th>" +
-        "</tr></thead>" +
-        "<tbody></tbody>"
+function renderTableForSets(exercise_name) {
+    let content = $(".content");
+    if (exercise_name) {
+        // .split() is used because HTML doesn't allow spaces
+        content.append(
+            "<table id='" + exercise_name.split(' ').join('_') + "_table' " +
+            "class='sets_table table table-striped wrapper table-dark'>");
+    } else {
+        content.append(
+            "<table class='sets_table table table-striped wrapper table-dark'> ");
+    }
+
+    $(".sets_table").last().append(
+        "class='sets_table table table-striped wrapper table-dark'>" +
+            "<thead><tr>" + 
+                "<th>Set</th>" +
+                "<th>Weight (kg)</th>" +
+                "<th>Reps</th>" +
+                "<th>RIR</th>" +
+            "</tr></thead>" +
+            "<tbody></tbody>" +
+        "</table>"
     );
 }
 
@@ -332,20 +341,20 @@ function renderWorkoutEditPage(body) {
     let content = $(".content")
     content.empty();
     $(".notification").empty();
-    renderTableForWorkouts();
 
     // Back button
-    let link = body["@controls"].collection.href;
-    content.html("<div class='text-center'><a class='btn btn-dark' href='' " +
-                  "onClick='followLink(event, '" + link + "', renderWorkout)'>" +
-                  "Back to Workouts</a></div>");
+    let link = body["@controls"].self.href;
+    content.html("<div class='text-center'><a class='btn btn-dark' href='" +
+        link + "' onClick='followLink(event, this, renderWorkout)'>" +
+        "Back to Workout</a></div>"
+    );
 
     // Workouts table
-    content.append("<h1>" + body.date_time + "<h2>");
+    content.append("<h1>" + body.date_time + "</h1>");
     renderTableForWorkouts();
     $(".workouts_table tbody").append(workoutRow(body, "none"));
 
-    // Workout form
+    // Edit form
     $(".content").append("<hr>");
     content.append("<h2>Edit This Workout Information</h2>")
     renderWorkoutForm(body["@controls"].edit);
@@ -453,21 +462,27 @@ function renderAddSetForm(body) {
 }
 
 function renderHtmlForSetForm(body) {
-    $(".content").append(
-        "<form id='" + body.exercise_name.split(' ').join('_') + "' class='set_form'>" + 
+    // .split() is used because HTML doesn't allow spaces
+    $("#" + body.exercise_name.split(' ').join('_') + "_table").after(
+        "<form id='" + body.exercise_name.split(' ').join('_') + "_form' " + 
+        "class='set_form'>" + 
             "<div class='row justify-content-md-center'>" +
                 "<div class='col-lg-2'>" + 
                     "<input type='number' step='0.1' name='weight' " +
-                    "placeholder='weight' class='form-control mb-2 text-center'></div>" +
+                    "placeholder='weight' class='form-control mb-2 text-center'>" +
+                "</div>" +
                 "<div class='col-lg-2'>" + 
                     "<input type='number' name='reps' " +
-                    "placeholder='reps' class='form-control mb-2 text-center'></div>" +
+                    "placeholder='reps' class='form-control mb-2 text-center'>" + 
+                "</div>" +
                 "<div class='col-lg-2'>" + 
                     "<input type='number' name='rir' " + 
-                    "placeholder='RIR' class='form-control mb-2 text-center'></div>" +
+                    "placeholder='RIR' class='form-control mb-2 text-center'>" + 
+                "</div>" +
                 "<div class='col-lg-2'>" + 
                     "<input type='submit' name='submit' value='Add Set' " + 
-                    "class='btn btn-info new_set_submit'></div>" +
+                    "class='btn btn-info new_set_submit'>" +
+                "</div>" +
             "</div>" +
         "</form>");
 }
@@ -488,7 +503,7 @@ function renderTableForProgrammingLifting() {
     $(".programming_table thead").last().append(
         "<tr>" +
             "<th>Week</th>" +
-            "<th>Intensity</th>" +
+            "<th>Intensity (%)</th>" +
             "<th>Sets</th>" +
             "<th>Reps</th>" +
             "<th>RIR</th>" +
@@ -570,12 +585,152 @@ function renderProgramming(body) {
 
 /***** Functions for rendering Exercises pages *****/
 
+
+function renderTableForExercises() {
+    $(".content").append(
+        "<div class='workouts'>" +
+            "<table class='exercise_table table table-striped wrapper table-dark bg-dark'>" +
+                "<thead>" +
+                    "<tr>" +
+                        "<th>Exercise</th>" +
+                        "<th>Action</th>" +
+                    "</tr>" +
+                "</thead>" +
+                "<tbody></tbody>" +
+            "</table>" +
+            "<div class='form'></div>" +
+        "</div>"
+    );
+}
+
+function exerciseRow(item) {
+    let self_link = "<a href='" + item["@controls"].self.href +
+        "' onClick='followLink(event, this, renderExercise)'>show</a><br>";
+    
+    return "<tr>" +
+            "<th>" + item.exercise_name + "</th>" +
+            "<td>" + self_link + "</td>" +
+            "</tr>";
+}
+
 function renderExercises(body) {
     renderNavigation("exercises");
     let content = $(".content");
-    content.html("<h1>Exercises</h1>");
-    content.append("<h2>Work in Progress</h2>");
+    content.empty();
+    content.html("<h1>Trained Exercises</h1>");
+    renderTableForExercises();
+    
+    $(".exercise_table tbody").empty();
+    body.items.forEach(function (item) {
+        $(".exercise_table tbody").append(exerciseRow(item));
+    });
 }
+
+function renderExercise(body) {
+    let content = $(".content");
+
+    // Back button
+    let link = body["@controls"].collection.href;
+    content.html("<div class='text-center'><a class='btn btn-dark' href='" +
+                    link + "' onClick='followLink(event, this, " + 
+                    "renderExercises)'>Back to Exercises</a></div>");
+
+    // Exercise max data graph
+    content.append("<h1>" + body.exercise_name + "</h2>")
+    content.append("<h3>Max Data Chart</h3>");
+    content.append("<div id='chartContainer' style='height: 370px; width: 100%;'></div>");
+    getResource(
+        body["@controls"]["workoutlog:max-data-for-exercise"].href,
+        renderGraph
+    );
+
+    // Latest workouts the exercise has been trained in
+    content.append("<h3>Latest Workouts</h3>");
+    getResource(
+        body["@controls"]["workoutlog:workouts-by-exercise"].href,
+        renderWorkoutsByExercise
+    );
+}
+
+function renderWorkoutsByExercise(body) {
+    let content = $(".content");
+    
+    // If there are no exercises yet, render just the add exercise form
+    if (body.items.length == 0){
+        content.append("<p>This exercise hasn't been trained in any workouts yet</p>")
+    } else {
+        // Work around the asynchronous nature of ajax calls
+        content.append("<h4>" + body.items[0].date_time + "</h4>");
+        renderTableForSets();
+        let i = 1;
+        body.items.forEach(function (item) {
+            getResource(
+                item["@controls"]["workoutlog:sets-within-workout"].href,
+                renderSetsWithoutForm
+            ).done(function() {
+                if (i < body.items.length) {
+                    content.append("<h4>" + body.items[i].date_time + "</h4>");
+                    renderTableForSets();
+                    i++;
+                }
+            });
+        });
+    }
+}
+
+function renderSetsWithoutForm(body) {
+    body.items.forEach(function (item) {
+        $(".sets_table tbody").last().append(setRow(item));
+    });
+}
+
+function renderGraph(body) {
+    let max_data = [];
+    body.items.forEach(function (item) {
+        max_data.push({ x: new Date(item.date), y: item.estimated_max });
+    });
+    
+    var options = {
+        animationEnabled: true,
+        theme: "dark1",
+        title:{
+            text: "Estimated Max"
+        },
+        axisX:{
+            valueFormatString: "YYYY MMM",
+            lineColor: "#0ecae3",
+        },
+        axisY: {
+            title: "Weight",
+            suffix: " kg",
+            titleFontColor: "#51CDA0",
+            lineColor: "#0ecae3",
+            gridColor: "grey"
+        },
+        toolTip:{
+            shared:true
+        },  
+        legend:{
+            cursor:"pointer",
+            verticalAlign: "bottom",
+            horizontalAlign: "left",
+            dockInsidePlotArea: true
+        },
+        data: [{
+            type: "line",
+            showInLegend: true,
+            name: "Estimated Max",
+            markerType: "square",
+            xValueFormatString: "YYYY-MMM-DD",
+            color: "white",
+            lineColor: "#51CDA0",
+            yValueFormatString: "#,##0 kg",
+            dataPoints: max_data
+        }]
+    };
+    $("#chartContainer").CanvasJSChart(options);
+}
+
 
 
 
