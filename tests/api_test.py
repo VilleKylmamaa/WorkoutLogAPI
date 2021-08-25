@@ -41,6 +41,7 @@ def client():
     os.close(db_fd)
     os.unlink(db_fname)
 
+
 def _populate_db():
     # Workouts
     workout_1 = Workout(
@@ -91,26 +92,26 @@ def _populate_db():
             reps_in_reserve=4-i,
             exercise=paused_squat,
             workout=workout_2
-        ))
+        ))  
     # Max data
     db.session.add(MaxData(
         exercise=squat,
         order_for_exercise=1,
-        date_time=datetime.datetime.now(),
+        date=datetime.date.today(),
         training_max=140
         ))
     
     db.session.add(MaxData(
         exercise=paused_squat,
         order_for_exercise=1,
-        date_time=datetime.datetime.now(),
+        date=datetime.date.today(),
         training_max=120
         ))
 
     db.session.add(MaxData(
         exercise=paused_squat,
         order_for_exercise=2,
-        date_time=datetime.datetime.now(),
+        date=datetime.date.today(),
         training_max=145
         ))
     
@@ -134,6 +135,7 @@ def _populate_db():
         ))
 
     db.session.commit()
+
 
 def _get_workout_json():
     """
@@ -182,7 +184,7 @@ def _get_max_data_json():
     
     return {
             "order_for_exercise": 3,
-            "date_time": datetime.datetime(2020, 12, 24, 12, 15).strftime('%Y-%m-%d %H:%M'),
+            "date": datetime.date(2020, 12, 24).strftime('%Y-%m-%d'),
             "training_max": 140,
             "estimated_max": 150,
             "tested_max": 145
@@ -206,6 +208,7 @@ def _get_weekly_programming_json():
             "average_heart_rate": 100,
             "notes": "yee"
             }
+
 
 def _check_namespace(client, response):
     """
@@ -270,11 +273,11 @@ def _check_control_put_method(ctrl, client, obj, resource):
         body = _get_set_json()
         body["order_in_workout"] = obj["order_in_workout"]
     elif resource == "max_data":
-        body = _get_set_json()
+        body = _get_max_data_json()
         body["order_for_exercise"] = obj["order_for_exercise"]
-        body["date_time"] = obj["date_time"]
+        body["date"] = obj["date"]
     elif resource == "weekly_programming":
-        body = _get_set_json()
+        body = _get_weekly_programming_json()
         body["exercise_type"] = obj["exercise_type"]
         body["week_number"] = obj["week_number"]
     validate(body, schema)
@@ -638,13 +641,18 @@ class TestExerciseItem(object):
         assert resp.status_code == 404     
 
 
-class TestSetCollection(object):
+class TestSetsWithinWorkout(object):
     
-    RESOURCE_URL = "/api/workouts/1/exercises/Squat/sets/"
+    WORKOUTS_URL = "/api/workouts/1/exercises/Squat/sets/"
+    EXERCISES_URL = "/api/exercises/Squat/workouts/1/sets/"
+    INVALID_WORKOUTS_URL = "/api/workouts/999/exercises/Squat/sets/"
+    INVALID_EXERCISES_URL = "/api/workouts/1/exercises/sqwweat/sets/"
 
-    # test GET methods and that all methods exist for SetCollection
+    # test GET methods and that all methods exist for SetsWithinWorkout
     def test_get(self, client):
-        resp = client.get(self.RESOURCE_URL)
+        resp = client.get(self.WORKOUTS_URL)
+        assert resp.status_code == 200
+        resp = client.get(self.EXERCISES_URL)
         assert resp.status_code == 200
         body = json.loads(resp.data)
         _check_namespace(client, body)
@@ -654,30 +662,54 @@ class TestSetCollection(object):
             _check_control_get_method("self", client, item)
             _check_control_get_method("profile", client, item)
 
-    # test POST method for SetCollection
+        # test invalid links
+        resp = client.get(self.INVALID_WORKOUTS_URL)
+        assert resp.status_code == 404
+        resp = client.get(self.INVALID_EXERCISES_URL)
+        assert resp.status_code == 404
+
+    # test POST method for SetsWithinWorkout
     def test_post(self, client):
         valid = _get_set_json()
         
         # test with wrong content type
-        resp = client.post(self.RESOURCE_URL, data=json.dumps(valid))
+        resp = client.post(self.WORKOUTS_URL, data=json.dumps(valid))
         assert resp.status_code == 415
-        
+
         # test with valid and see that it exists afterward
-        resp = client.post(self.RESOURCE_URL, json=valid)
+        resp = client.post(self.WORKOUTS_URL, json=valid)
         assert resp.status_code == 201
-        assert resp.headers["Location"].endswith(self.RESOURCE_URL + str(valid["order_in_workout"]) + "/")
+        assert resp.headers["Location"].endswith(self.WORKOUTS_URL + str(valid["order_in_workout"]) + "/")
         resp = client.get(resp.headers["Location"])
         assert resp.status_code == 200
         
         # send same data again for 409
-        resp = client.post(self.RESOURCE_URL, json=valid)
+        resp = client.post(self.WORKOUTS_URL, json=valid)
         assert resp.status_code == 409
-        
+
+        # test with invalid urls
+        resp = client.post(self.INVALID_WORKOUTS_URL, data=valid)
+        assert resp.status_code == 404
+        resp = client.post(self.INVALID_EXERCISES_URL, data=valid)
+        assert resp.status_code == 404
+
         # test that request can be sent without order_in_workout field
         # in which case it will be auto-generated
         valid.pop("order_in_workout")
-        resp = client.post(self.RESOURCE_URL, json=valid)
+        resp = client.post(self.WORKOUTS_URL, json=valid)
         assert resp.status_code == 201
+
+        # test sending float to integer column
+        valid["number_of_reps"] = 5.555
+        resp = client.post(self.WORKOUTS_URL, json=valid)
+        assert resp.status_code == 400
+        valid["number_of_reps"] = 5
+
+        # test sending float to integer column
+        valid["duration"] = "invalid duration"
+        resp = client.post(self.WORKOUTS_URL, json=valid)
+        assert resp.status_code == 400
+
       
 
 class TestSetItem(object):
@@ -764,8 +796,8 @@ class TestMaxDataForExercise(object):
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 201
         
-        # remove date_time field for 400
-        valid.pop("date_time")
+        # remove date field for 400
+        valid.pop("date")
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 400
 

@@ -9,7 +9,7 @@ from sqlite3 import Connection as SQLite3Connection
 from sqlalchemy.exc import IntegrityError
 
 from workoutlog import create_app, db
-from workoutlog.models import Workout, Exercise, Set, MaxData, WeeklyProgramming
+from workoutlog.models import *
 
 
 # Enforce foreign key constraints
@@ -30,16 +30,16 @@ def app():
     }
     
     app = create_app(config)
-    
+
     with app.app_context():
         db.create_all()
-        
+
     yield app
     
     os.close(db_fd)
     os.unlink(db_fname)
 
-
+    
 def _get_workout(date_time=datetime.datetime(2021, 8, 5, 11, 30)):
     return Workout(
         date_time=date_time,
@@ -72,7 +72,7 @@ def _get_set(exer, workout):
 def _get_max_data_1(exer):
     return MaxData(
         order_for_exercise=1,
-        date_time=datetime.datetime(2021, 8, 5),
+        date=datetime.date(2021, 8, 5),
         training_max=120,
         estimated_max=150,
         tested_max=140,
@@ -82,7 +82,7 @@ def _get_max_data_1(exer):
 def _get_max_data_2(exer):
     return MaxData(
         order_for_exercise=2,
-        date_time=datetime.datetime(2021, 8, 6),
+        date=datetime.date(2021, 8, 6),
         training_max=120,
         estimated_max=150,
         tested_max=140,
@@ -365,7 +365,7 @@ def test_max_data_columns(app):
         # Tests that date_time is non-nullable
         exercise = _get_exercise()
         max_data = _get_max_data_1(exercise)
-        max_data.date_time = None
+        max_data.date = None
         db.session.add(max_data)
         with pytest.raises(IntegrityError):
             db.session.commit()
@@ -473,3 +473,29 @@ def test_weekly_programming_columns(app):
         db.session.add(weekly_programming)
         db.session.commit()
         assert WeeklyProgramming.query.first() == weekly_programming
+
+
+def test_cli_init(app):
+    """
+    Tests that init_db_command exists
+    """
+    runner = app.test_cli_runner()
+    result = runner.invoke(init_db_command)
+    assert result
+
+
+def test_cli_delete(app):
+    """
+    Tests that delete_db_command exists
+    """
+    runner = app.test_cli_runner()
+    result = runner.invoke(delete_db_command)
+    assert result
+
+def test_cli_testgen(app):
+    """
+    Tests that insert_initial_data exists
+    """
+    runner = app.test_cli_runner()
+    result = runner.invoke(insert_initial_data)
+    assert result
