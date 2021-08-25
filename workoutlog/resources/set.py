@@ -41,7 +41,7 @@ class SetsWithinWorkout(Resource):
             body.add_control("self", url_for("api.sets_exercises_path", workout_id=workout_id, exercise_name=exercise_name))
             body.add_control("profile", SET_PROFILE)
             body.add_control("up", url_for("api.workoutitem", workout_id=workout_id, exercise_name=exercise_name))
-            body.add_control_add_set()
+            body.add_control_add_set(workout_id, exercise_name)
         
         body["items"] = []
         for db_set in Set.query.filter_by(workout=db_workout, exercise=db_exercise).all():

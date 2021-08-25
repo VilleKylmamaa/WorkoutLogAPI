@@ -127,7 +127,7 @@ class WorkoutsByExercise(Resource):
             )
             item.add_control("self", url_for("api.workoutitem", exercise_name=exercise_name, workout_id=db_workout.workout_id))
             item.add_control("profile", WORKOUT_PROFILE)
-            item.add_control("sets-within-workout", url_for("api.sets_exercises_path", exercise_name=exercise_name, workout_id=db_workout.workout_id))
+            item.add_control("workoutlog:sets-within-workout", url_for("api.sets_exercises_path", exercise_name=exercise_name, workout_id=db_workout.workout_id))
             item.add_control_edit_workout(db_workout.workout_id)
             item.add_control_delete_workout(db_workout.workout_id)
             body["items"].append(item)

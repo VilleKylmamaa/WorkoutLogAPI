@@ -30,7 +30,7 @@ class MaxDataForExercise(Resource):
         for db_max_data in MaxData.query.filter_by(exercise=db_exercise).all():
             item = WorkoutLogBuilder(
                 order_for_exercise=db_max_data.order_for_exercise,
-                date_time=db_max_data.date_time.strftime('%Y-%m-%d %H:%M'),
+                date=db_max_data.date.strftime('%Y-%m-%d'),
                 training_max=db_max_data.training_max,
                 estimated_max=db_max_data.estimated_max,
                 tested_max=db_max_data.tested_max
@@ -81,12 +81,12 @@ class MaxDataForExercise(Resource):
         try:
             max_data = MaxData(
                 order_for_exercise=order_for_exercise,
-                date_time=datetime.strptime(request.json["date_time"], "%Y-%m-%d %H:%M"),
+                date=datetime.strptime(request.json["date"], "%Y-%m-%d"),
                 exercise=db_exercise
             )
         except ValueError as e:
-            return create_error_response(400, "Invalid datetime" +
-                "Datetime must match format YYYY-MM-DD HH:MM", str(e))
+            return create_error_response(400, "Invalid date. " +
+                "Date must match format YYYY-MM-DD", str(e))
 
         # Iterate over nullable properties in the request and ignore
         # the KeyError request.json[] from a key missing. This way the client
@@ -137,7 +137,7 @@ class MaxDataItem(Resource):
 
         body = WorkoutLogBuilder(
             order_for_exercise=db_max_data.order_for_exercise,
-            date_time=db_max_data.date_time.strftime('%Y-%m-%d %H:%M'),
+            date=db_max_data.date.strftime('%Y-%m-%d'),
             training_max=db_max_data.training_max,
             estimated_max=db_max_data.estimated_max,
             tested_max=db_max_data.tested_max
@@ -190,20 +190,13 @@ class MaxDataItem(Resource):
                 if prop == "order_for_exercise":
                     db_max_data.order_for_exercise = request.json[prop]
                     order_for_exercise_for_error = request.json[prop]
-                elif prop == "date_time":
+                elif prop == "date":
                     try:
-                        date_time_string = datetime.strptime(request.json["date_time"], "%Y-%m-%d %H:%M")
-                        for max_data in MaxData.query.all():
-                            if max_data is not MaxData.query.filter_by(exercise=db_exercise, order_for_exercise=order_for_exercise).first():
-                                if max_data.date_time == date_time_string:
-                                    return create_error_response(
-                                        409, "Already exists",
-                                        "Workout with date_time '{}' already exists".format(request.json["date_time"])
-                                    )
-                        db_max_data.date_time = date_time_string
+                        date_string = datetime.strptime(request.json["date"], "%Y-%m-%d")
+                        db_max_data.date = date_string
                     except ValueError as e:
-                        return create_error_response(400, "Invalid datetime." +
-                            "Datetime must match format YYYY-MM-DD HH:MM", str(e))
+                        return create_error_response(400, "Invalid date. " +
+                            "Date must match format YYYY-MM-DD", str(e))
                 elif prop == "training_max":
                     db_max_data.training_max = request.json[prop]
                 elif prop =="estimated_max":
