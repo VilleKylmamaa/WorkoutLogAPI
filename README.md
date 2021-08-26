@@ -30,7 +30,7 @@ An example workout log client utilizing the API is provided. It uses the hyperme
 2. (Optional) Use [virtual environment](https://docs.python.org/3/tutorial/venv.html). A virtual environment is a private copy of the Python interpreter onto which you can install packages privately, without affecting the global Python interpreter installed in your system. In the root folder, to create the virtual environment, run the command:
 
 ```
-python3 -m venv venv
+python -m venv venv
 ```
 
 Then start using the virtual enviroment with the command:
