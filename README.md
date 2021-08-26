@@ -52,8 +52,9 @@ source venv/bin/activate
  
  ```
  pip install -r requirements.txt
- pip install workoutlog
  ```
+ 
+ This alone should also install setup.py
 
 4. To run the API in localhost run the bat file:
 
