@@ -160,7 +160,11 @@ class WorkoutLogBuilder(MasonBuilder):
     def add_control_add_set(self, workout_id, exercise_name):
         self.add_control(
             "workoutlog:add-set",
-            url_for("api.sets_workouts_path", workout_id=workout_id, exercise_name=exercise_name),
+            url_for(
+                "api.sets_workouts_path",
+                workout_id=workout_id, 
+                exercise_name=exercise_name
+            ),
             method="POST",
             encoding="json",
             title="Add a new set",
@@ -210,7 +214,7 @@ class WorkoutLogBuilder(MasonBuilder):
             schema=Exercise.get_schema()
         )
         
-    def add_control_edit_set(self, workout_id, exercise_name, order_in_workout):
+    def add_control_edit_set_workouts_path(self, workout_id, exercise_name, order_in_workout):
         self.add_control(
             "edit",
             url_for("api.set_workouts_path",
@@ -218,6 +222,19 @@ class WorkoutLogBuilder(MasonBuilder):
                 exercise_name=exercise_name,
                 order_in_workout=order_in_workout
                 ),
+            method="PUT",
+            encoding="json",
+            title="Edit this set",
+            schema=Set.get_schema()
+        )
+
+    def add_control_edit_set_exercises_path(self, workout_id, exercise_name, order_in_workout):
+        self.add_control(
+            "edit",
+            url_for("api.set_exercises_path",
+                workout_id=workout_id,
+                exercise_name=exercise_name,
+                order_in_workout=order_in_workout),
             method="PUT",
             encoding="json",
             title="Edit this set",
@@ -269,10 +286,21 @@ class WorkoutLogBuilder(MasonBuilder):
             title="Delete this exercise"
         )
 
-    def add_control_delete_set(self, workout_id, exercise_name, order_in_workout):
+    def add_control_delete_set_workouts_path(self, workout_id, exercise_name, order_in_workout):
         self.add_control(
             "workoutlog:delete",
             url_for("api.set_workouts_path",
+                workout_id=workout_id,
+                exercise_name=exercise_name,
+                order_in_workout=order_in_workout),
+            method="DELETE",
+            title="Delete this set"
+        )
+
+    def add_control_delete_set_exercises_path(self, workout_id, exercise_name, order_in_workout):
+        self.add_control(
+            "workoutlog:delete",
+            url_for("api.set_exercises_path",
                 workout_id=workout_id,
                 exercise_name=exercise_name,
                 order_in_workout=order_in_workout),
@@ -293,7 +321,11 @@ class WorkoutLogBuilder(MasonBuilder):
     def add_control_delete_weekly_programming(self, exercise_type, week_number):
         self.add_control(
             "workoutlog:delete",
-            url_for("api.weeklyprogrammingitem", exercise_type=exercise_type, week_number=week_number),
+            url_for(
+                "api.weeklyprogrammingitem",
+                exercise_type=exercise_type,
+                week_number=week_number
+            ),
             method="DELETE",
             title="Delete this weekly programming data"
         )

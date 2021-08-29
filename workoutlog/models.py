@@ -469,9 +469,9 @@ def insert_initial_data(*args, **kwargs):
 
     # Workout 1 
     workout_1 = Workout(
-        date_time=datetime.datetime(2021, 8, 12, 12),
+        date_time=datetime.datetime(2021, 8, 10, 12),
         duration=datetime.timedelta(hours=1, minutes=15),
-        body_weight=71.5,
+        body_weight=71.3,
         average_heart_rate=100,
         max_heart_rate=125,
         notes="Easy session"
@@ -532,7 +532,7 @@ def insert_initial_data(*args, **kwargs):
 
     # Workout 2
     workout_2 = Workout(
-        date_time=datetime.datetime(2021, 8, 10, 14),
+        date_time=datetime.datetime(2021, 8, 12, 14),
         duration=datetime.timedelta(hours=1, minutes=30),
         body_weight=71.6,
         average_heart_rate=115,
@@ -579,7 +579,7 @@ def insert_initial_data(*args, **kwargs):
     workout_3 = Workout(
         date_time=datetime.datetime(2021, 8, 14, 16),
         duration=datetime.timedelta(hours=1, minutes=0),
-        body_weight=71.5,
+        body_weight=71.4,
         average_heart_rate=120,
         max_heart_rate=150,
         exercises=[squat, bench]
