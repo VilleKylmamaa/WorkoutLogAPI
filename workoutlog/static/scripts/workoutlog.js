@@ -9,11 +9,15 @@ const PLAINJSON = "application/json";
  */
 function renderError(jqxhr) {
     let msg = jqxhr.responseJSON["@error"]["@message"]
-    $("div.notification").html("<p class='error'>" + msg + "</p>");
+    alert(msg);
 }
 
-function renderMsg(msg) {
-    $("div.notification").html("<p class='msg'>" + msg + "</p>");
+function renderMsg(msg, target) {
+    if (target) {
+        $(target).after("<p class='msg'>" + msg + "</p>");
+    } else {
+        $("div.notification").html("<p class='msg'>" + msg + "</p>");
+    }
 }
 
 /**
@@ -49,6 +53,11 @@ function sendData(href, method, item, postProcessor) {
  */
  function followLink(event, a, renderer) {
     event.preventDefault();
+    if (renderer == deleteSet) {
+        let table_id = event["path"][4]["id"];
+        let table = $("#" + table_id);
+        table.addClass("remove_set_from_this");
+    }
     getResource($(a).attr("href"), renderer);
 }
 
@@ -80,7 +89,7 @@ function submitExercise(event) {
     event.preventDefault();
 
     let data = {};
-    let form = $(".content form.exercise_form");
+    let form = $("#exercise_form");
     data.exercise_name = $("input[name='exercise_name']").val();
     sendData(form.attr("action"), form.attr("method"), data, getSubmittedExercise);
 }
@@ -89,16 +98,27 @@ function getSubmittedExercise(data, status, jqxhr) {
     renderMsg("Exercise added");
     let href = jqxhr.getResponseHeader("Location");
     if (href) {
-        getResource(href, getExercisesWithinWorkoutLink);
+        getResource(href, renderNewExercise);
     }
 }
 
-function getExercisesWithinWorkoutLink(body) {
-    getResource(body["@controls"].collection.href, reRenderWorkout);
-}
-
-function reRenderWorkout(body) {
-    getResource(body["@controls"].up.href, renderWorkout);
+function renderNewExercise(body) {
+    if ($(".set_form").length === 0) {
+        $(".workouts_table").after(
+            "<h3 id='" + body.exercise_name.split(' ').join('_') + "_title'>" +
+            body.exercise_name + "</h3>"
+            );
+    } else {
+        $(".set_form").last().append(
+            "<h3 id='" + body.exercise_name.split(' ').join('_') + "_title'>" +
+            body.exercise_name + "</h3>"
+        );
+    }
+    renderTableForSets(body.exercise_name);
+    getResource(
+        body["@controls"]["workoutlog:sets-within-workout"].href,
+        renderAddSetForm
+    );
 }
 
 function submitSet(event) {
@@ -113,14 +133,16 @@ function submitSet(event) {
     data.number_of_reps = parseInt($("#" + form_id + " input[name='reps']").val());
     data.reps_in_reserve = parseInt($("#" + form_id + " input[name='rir']").val());
 
-    // Give ID to the correct table where the set will be appended
+    // Remove ID from the previous table a set was added to and
+    // give ID to the correct table where the set will be appended
+    $("#new_set_target").removeAttr("id");
     $("#" + form_id).prev().attr("id", "new_set_target");
 
     sendData(form.attr("action"), form.attr("method"), data, getSubmittedSet);
 }
 
 function getSubmittedSet(data, status, jqxhr) {
-    renderMsg("Set added");
+    // Render message under the set form
     let href = jqxhr.getResponseHeader("Location");
     if (href) {
         getResource(href, appendSetRow);
@@ -129,8 +151,32 @@ function getSubmittedSet(data, status, jqxhr) {
 
 function appendSetRow(body) {
     $("#new_set_target").append(setRow(body));
-    $("#new_set_target").removeAttr('id'); // Remove the ID after the addition
 }
+
+function submitMaxData(event) {
+    event.preventDefault();
+    let data = {};
+    let form = $("#max_data_form");
+    data.date = $("input[name='date']").val();
+    data.estimated_max = parseFloat($("input[name='estimated_max']").val());
+    sendData(form.attr("action"), form.attr("method"), data, getSubmittedMaxData);
+}
+
+function getSubmittedMaxData(data, status, jqxhr) {
+    renderMsg("Max data added", "#max_data_form");
+    let href = jqxhr.getResponseHeader("Location");
+    if (href) {
+        getResource(
+            href,
+            reRenderGraph
+        );
+    }
+}
+
+function reRenderGraph(body) {
+    getResource(body["@controls"].collection.href, renderGraph);
+}
+
 
 
 
@@ -145,6 +191,17 @@ function deleteWorkout(body) {
                 body["@controls"].collection.href,
                 renderWorkouts
             )
+        });
+}
+
+function deleteSet(body) {
+    sendData(
+        body["@controls"]["workoutlog:delete"].href,
+        body["@controls"]["workoutlog:delete"].method
+        ).done(function() {
+            $(".remove_set_from_this tbody th:contains('" 
+                + body["order_in_workout"] + "')").parent().remove();
+            $(".remove_set_from_this").removeClass("remove_set_from_this");
         });
 }
 
@@ -211,20 +268,26 @@ function workoutRow(item, switch_actions) {
         "deleteWorkout)'>delete</a>";
     
     return "<tr>" +
-            "<th>" + item.date_time + "</th>" +
-            "<td>" + item.duration + "</td>" +
-            "<td>" + item.body_weight + "</td>" +
-            "<td>" + item.average_heart_rate + "</td>" +
-            "<td>" + self_link + edit_link + delete_link + "</td>" +
+                "<th>" + item.date_time + "</th>" +
+                "<td>" + item.duration + "</td>" +
+                "<td>" + item.body_weight + "</td>" +
+                "<td>" + item.average_heart_rate + "</td>" +
+                "<td>" + self_link + edit_link + delete_link + "</td>" +
             "</tr>";
 }
 
 function setRow(item) {
+    var delete_link = "<a href='" +
+        item["@controls"]["workoutlog:delete"].href +
+        "' onClick='followLink(event, this," +
+        "deleteSet)'>delete</a>";
+    
     return "<tr>" +
-            "<th>" + item.order_in_workout + "</th>" +
-            "<td>" + item.weight + "</td>" +
-            "<td>" + item.number_of_reps + "</td>" +
-            "<td>" + item.reps_in_reserve + "</td>" +
+                "<th>" + item.order_in_workout + "</th>" +
+                "<td>" + item.weight + "</td>" +
+                "<td>" + item.number_of_reps + "</td>" +
+                "<td>" + item.reps_in_reserve + "</td>" +
+                "<td>" + delete_link + "</td>" +
             "</tr>";
 }
 
@@ -255,8 +318,8 @@ function renderWorkout(body) {
 
     // Back button
     let link = body["@controls"].collection.href;
-    content.append("<div class='text-center'><a class='btn btn-dark' href='" +
-        link + "' onClick='followLink(event, this, renderWorkouts)'>" +
+    content.append("<div class='text-center mt-5'><a class='btn btn-dark' " + 
+        "href='" + link + "' onClick='followLink(event, this, renderWorkouts)'>" +
         "Back to Workouts</a></div>"
     );
 
@@ -275,67 +338,67 @@ function renderExercisesWithinWorkout(body) {
     let content = $(".content");
     
     // If there are no exercises yet, render just the add exercise form
-    if (body.items.length > 0){
-        // Work around the asynchronous nature of ajax calls
-        content.append("<h3>" + body.items[0].exercise_name + "</h3>");
-        renderTableForSets(body.items[0].exercise_name);
-        let i = 1;
-        body.items.forEach(function (item) {
-            getResource(
-                item["@controls"]["workoutlog:sets-within-workout"].href,
-                renderSets
-            ).done(function() {
-                if (i < body.items.length) {
-                    let this_exercise = body.items[i].exercise_name;
-                    content.append("<h3>" + this_exercise + "</h3>");
-                    renderTableForSets(body.items[i].exercise_name);
-                    i++;
-                }
-                // render add exercise form after all sets are rendered
-                else if (i === body.items.length) {
-                    content.append("<h2>Add Exercise to Workout</h2>");
-                    renderAddExerciseForm(body["@controls"]["workoutlog:add-exercise-to-workout"]);
-                }
-            });
-        });
+    if (body.items.length === 0) {
+        content.append(
+            "<h2 id='add_exercise_title'>Add Exercise to Workout</h2>"
+        );
+        renderAddExerciseForm(
+            body["@controls"]["workoutlog:add-exercise-to-workout"]
+        );
     } else {
-        content.append("<h2>Add Exercise to Workout</h2>");
-        renderAddExerciseForm(body["@controls"]["workoutlog:add-exercise-to-workout"]);
+        let promises = [];
+        body.items.forEach(function (exercise_item) {
+            let request = $.ajax({
+                url: exercise_item["@controls"]["workoutlog:sets-within-workout"].href,
+                success: function(result) {
+                    let exercise_name = exercise_item.exercise_name;
+                    content.append(
+                        "<h3 id='" + exercise_name.split(' ').join('_') + "_title'>"
+                        + exercise_name + "</h3>"
+                    );
+                    renderTableForSets(exercise_name);
+                    result.items.forEach(function (set_item) {
+                        $(".sets_table tbody").last().append(setRow(set_item));
+                    });
+                    renderAddSetForm(result);
+                },
+                error: renderError
+            });
+            promises.push(request);
+        });
+
+        $.when.apply(null, promises).done(function() {
+            content.append(
+                "<h2 id='add_exercise_title'>Add Exercise to Workout</h2>"
+            );
+            renderAddExerciseForm(
+                body["@controls"]["workoutlog:add-exercise-to-workout"]
+            );
+        })
     }
 }
 
 function renderTableForSets(exercise_name) {
-    let content = $(".content");
-    if (exercise_name) {
-        // .split() is used because HTML doesn't allow spaces
-        content.append(
-            "<table id='" + exercise_name.split(' ').join('_') + "_table' " +
-            "class='sets_table table table-striped wrapper table-dark'>");
-    } else {
-        content.append(
-            "<table class='sets_table table table-striped wrapper table-dark'> ");
-    }
+    // .split() is used because HTML doesn't allow spaces
+    let title_id = exercise_name.split(' ').join('_') + "_title";
+    let table_id = exercise_name.split(' ').join('_') + "_table";
+    $("#" + title_id).after(
+        "<table id='" + table_id + "'" +
+        "class='sets_table table table-striped wrapper table-dark'></table>"
+    );
 
-    $(".sets_table").last().append(
-        "class='sets_table table table-striped wrapper table-dark'>" +
-            "<thead><tr>" + 
-                "<th>Set</th>" +
-                "<th>Weight (kg)</th>" +
-                "<th>Reps</th>" +
-                "<th>RIR</th>" +
-            "</tr></thead>" +
-            "<tbody></tbody>" +
-        "</table>"
+    $("#" + table_id).append(
+        "<thead><tr>" + 
+            "<th>Set</th>" +
+            "<th>Weight (kg)</th>" +
+            "<th>Reps</th>" +
+            "<th>RIR</th>" +
+            "<th>Action</th>" +
+        "</tr></thead>" +
+        "<tbody></tbody>"
     );
 }
 
-function renderSets(body) {
-    body.items.forEach(function (item) {
-        $(".sets_table tbody").last().append(setRow(item));
-    });
-
-    renderAddSetForm(body);
-}
 
 function renderWorkoutEditPage(body) {
     let content = $(".content")
@@ -344,8 +407,8 @@ function renderWorkoutEditPage(body) {
 
     // Back button
     let link = body["@controls"].self.href;
-    content.html("<div class='text-center'><a class='btn btn-dark' href='" +
-        link + "' onClick='followLink(event, this, renderWorkout)'>" +
+    content.append("<div class='text-center mt-5'><a class='btn btn-dark' " + 
+        "href='" + link + "' onClick='followLink(event, this, renderWorkout)'>" +
         "Back to Workout</a></div>"
     );
 
@@ -399,7 +462,7 @@ function renderWorkoutForm(ctrl) {
                 "<label for='average_heart_rate' class='form-label'>"
                 + average_heart_rate.description + "</label>" + 
                 "<input placeholder='average heart rate' type='number' " + 
-                "step='0.1' name='average_heart_rate' class='form-control mb-2'>" +
+                "step='1' name='average_heart_rate' class='form-control mb-2'>" +
                 "</div></div>"
         );
 
@@ -422,7 +485,7 @@ function renderWorkoutForm(ctrl) {
 }
 
 function renderAddExerciseForm(ctrl) {
-    let form = $("<form class='exercise_form'>");
+    let form = $("<form id='exercise_form'>");
     form.attr("action", ctrl.href);
     form.attr("method", ctrl.method);
     form.submit(submitExercise);
@@ -481,7 +544,7 @@ function renderHtmlForSetForm(body) {
                 "</div>" +
                 "<div class='col-lg-2'>" + 
                     "<input type='submit' name='submit' value='Add Set' " + 
-                    "class='btn btn-info new_set_submit'>" +
+                    "class='btn btn-info'>" +
                 "</div>" +
             "</div>" +
         "</form>");
@@ -616,6 +679,7 @@ function exerciseRow(item) {
 function renderExercises(body) {
     renderNavigation("exercises");
     let content = $(".content");
+    $(".notification").empty();
     content.empty();
     content.html("<h1>Trained Exercises</h1>");
     renderTableForExercises();
@@ -628,12 +692,13 @@ function renderExercises(body) {
 
 function renderExercise(body) {
     let content = $(".content");
+    content.empty();
 
     // Back button
     let link = body["@controls"].collection.href;
-    content.html("<div class='text-center'><a class='btn btn-dark' href='" +
-                    link + "' onClick='followLink(event, this, " + 
-                    "renderExercises)'>Back to Exercises</a></div>");
+    content.append("<div class='text-center mt-5'><a class='btn btn-dark' " + 
+        "href='" + link + "' onClick='followLink(event, this, renderExercises)'>" +
+        "Back to Exercises</a></div>");
 
     // Exercise max data graph
     content.append("<h1>" + body.exercise_name + "</h2>")
@@ -642,7 +707,12 @@ function renderExercise(body) {
     getResource(
         body["@controls"]["workoutlog:max-data-for-exercise"].href,
         renderGraph
-    );
+    ).done(function() {
+        getResource(
+            body["@controls"]["workoutlog:max-data-for-exercise"].href,
+            renderAddMaxDataForm
+        );
+    });
 
     // Latest workouts the exercise has been trained in
     content.append("<h3>Latest Workouts</h3>");
@@ -659,20 +729,23 @@ function renderWorkoutsByExercise(body) {
     if (body.items.length == 0){
         content.append("<p>This exercise hasn't been trained in any workouts yet</p>")
     } else {
-        // Work around the asynchronous nature of ajax calls
-        content.append("<h4>" + body.items[0].date_time + "</h4>");
-        renderTableForSets();
-        let i = 1;
-        body.items.forEach(function (item) {
-            getResource(
-                item["@controls"]["workoutlog:sets-within-workout"].href,
-                renderSetsWithoutForm
-            ).done(function() {
-                if (i < body.items.length) {
-                    content.append("<h4>" + body.items[i].date_time + "</h4>");
-                    renderTableForSets();
+        let i = 0;
+        body.items.forEach(function (workout_item) {
+            $.ajax({
+                url: workout_item["@controls"]["workoutlog:sets-within-workout"].href,
+                success: function(result) {
+                    let date_time = workout_item.date_time;
+                    content.append(
+                        "<h3 id='" + i + "_title'>"
+                        + date_time + "</h3>"
+                    );
+                    renderTableForSets(i.toString());
+                    result.items.forEach(function (set_item) {
+                        $(".sets_table tbody").last().append(setRow(set_item));
+                    });
                     i++;
-                }
+                },
+                error: renderError
             });
         });
     }
@@ -684,12 +757,27 @@ function renderSetsWithoutForm(body) {
     });
 }
 
+// Uses API on https://canvasjs.com/jquery-charts/
 function renderGraph(body) {
+    if ($(".msg")) {
+        $(".msg").remove();
+    }
+
     let max_data = [];
     body.items.forEach(function (item) {
         max_data.push({ x: new Date(item.date), y: item.estimated_max });
     });
+
+    let chartContainer = $("#chartContainer")
+
+    if (max_data.length < 2) {
+        chartContainer.after(
+        "<p class='msg'>Not enough max data to form a graph has been added " + 
+        "for this exercise yet. Add data with the form above.</p>"
+        );
+    }
     
+    chartContainer.empty();
     var options = {
         animationEnabled: true,
         theme: "dark1",
@@ -728,7 +816,40 @@ function renderGraph(body) {
             dataPoints: max_data
         }]
     };
-    $("#chartContainer").CanvasJSChart(options);
+    chartContainer.CanvasJSChart(options);
+}
+
+function renderAddMaxDataForm(body) {
+    let ctrl = body["@controls"]["workoutlog:add-max-data"];
+
+    getResource(body["@controls"].up.href, renderHtmlForMaxDataForm).done(function() {
+        let form_id = $(".max_data_form").last().attr("id");
+        let form = $("#" + form_id);
+        form.attr("action", ctrl.href);
+        form.attr("method", ctrl.method);
+        form.submit(submitMaxData);
+    });
+}
+
+function renderHtmlForMaxDataForm(body) {
+    // .split() is used because HTML doesn't allow spaces
+    $("#chartContainer").after(
+        "<form id='max_data_form' class='max_data_form'>" +
+            "<div class='row justify-content-md-center'>" +
+                "<div class='col-lg-2 mt-3'>" + 
+                    "<input type='text' name='date' " +
+                    "placeholder='date' class='form-control mb-2 text-center'>" +
+                "</div>" +
+                "<div class='col-lg-2 mt-3'>" + 
+                    "<input type='number' step='0.1' name='estimated_max' " +
+                    "placeholder='estimated max' class='form-control mb-2 text-center'>" + 
+                "</div>" +
+                "<div class='col-lg-2 mt-3'>" + 
+                    "<input type='submit' name='submit' value='Add Max Data' " + 
+                    "class='btn btn-info'>" +
+                "</div>" +
+            "</div>" +
+        "</form>");
 }
 
 

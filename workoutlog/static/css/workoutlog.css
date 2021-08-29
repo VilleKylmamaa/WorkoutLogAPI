@@ -82,6 +82,7 @@ tbody tr:nth-child(even) {
 tbody tr:nth-child(odd) {
     color: rgb(175, 241, 158) !important;
 }
+
 th, td {
     border-left: 1px solid #ddd !important;
 }
