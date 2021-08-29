@@ -24,11 +24,15 @@ class ExerciseCollection(Resource):
                 exercise_name=db_exercise.exercise_name,
                 exercise_type=db_exercise.exercise_type
             )
-            item.add_control("self", url_for("api.exerciseitem", exercise_name=db_exercise.exercise_name))
+            item.add_control("self", url_for(
+                "api.exerciseitem", 
+                exercise_name=db_exercise.exercise_name
+                )
+            )
             item.add_control("profile", EXERCISE_PROFILE)
-            item.add_control_get_workouts_by_exercise(exercise_name=db_exercise.exercise_name)
-            item.add_control_get_max_data_for_exercise(exercise_name=db_exercise.exercise_name)
-            item.add_control_get_weekly_programming_for_exercise(exercise_name=db_exercise.exercise_name)
+            item.add_control_get_workouts_by_exercise(db_exercise.exercise_name)
+            item.add_control_get_max_data_for_exercise(db_exercise.exercise_name)
+            item.add_control_get_weekly_programming_for_exercise(db_exercise.exercise_name)
             body["items"].append(item)
 
         return Response(json.dumps(body, default=str, indent=4), 200, mimetype=MASON)
@@ -43,7 +47,9 @@ class ExerciseCollection(Resource):
         try:
             validate(request.json, Exercise.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         if len(request.json["exercise_name"]) == 0:
             return create_error_response(400, "Exercise name is missing.")
@@ -69,7 +75,9 @@ class ExerciseCollection(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Exercise with name '{}' already exists.".format(request.json["exercise_name"])
+                "Exercise with name '{}' already exists.".format(
+                    request.json["exercise_name"]
+                )
             )
 
         return Response(status=201, headers={
@@ -92,7 +100,7 @@ class ExercisesWithinWorkout(Resource):
         body.add_control("self", url_for("api.exerciseswithinworkout", workout_id=workout_id))
         body.add_control("profile", EXERCISE_PROFILE)
         body.add_control("up", url_for("api.workoutitem", workout_id=workout_id))
-        body.add_control_add_exercise_to_workout(workout_id=workout_id)
+        body.add_control_add_exercise_to_workout(workout_id)
         
         body["items"] = []
         for db_exercise in Exercise.query.filter(Exercise.workouts.contains(db_workout)).all():
@@ -100,11 +108,20 @@ class ExercisesWithinWorkout(Resource):
                 exercise_name=db_exercise.exercise_name,
                 exercise_type=db_exercise.exercise_type
             )
-            item.add_control("self", url_for("api.exerciseitem", exercise_name=db_exercise.exercise_name))
+            item.add_control(
+                "self", url_for(
+                    "api.exerciseitem",
+                    workout_id=workout_id,
+                    exercise_name=db_exercise.exercise_name)
+                )
             item.add_control("profile", EXERCISE_PROFILE)
-            item.add_control("workoutlog:sets-within-workout", url_for("api.sets_workouts_path", workout_id=workout_id, exercise_name=db_exercise.exercise_name))
-            item.add_control_get_max_data_for_exercise(exercise_name=db_exercise.exercise_name)
-            item.add_control_get_weekly_programming_for_exercise(exercise_name=db_exercise.exercise_name)
+            item.add_control("workoutlog:sets-within-workout", url_for(
+                "api.sets_workouts_path",
+                workout_id=workout_id,
+                exercise_name=db_exercise.exercise_name)
+            )
+            item.add_control_get_max_data_for_exercise(db_exercise.exercise_name)
+            item.add_control_get_weekly_programming_for_exercise(db_exercise.exercise_name)
             body["items"].append(item)
 
         return Response(json.dumps(body, default=str, indent=4), 200, mimetype=MASON)
@@ -126,7 +143,9 @@ class ExercisesWithinWorkout(Resource):
         try:
             validate(request.json, Exercise.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         if len(request.json["exercise_name"]) == 0: 
             return create_error_response(400, "Exercise name is missing.")
@@ -152,7 +171,9 @@ class ExercisesWithinWorkout(Resource):
             except IntegrityError:
                 return create_error_response(
                     409, "Already exists",
-                    "Exercise with name '{}' already exists in workout '{}'".format(request.json["exercise_name"], db_workout.workout_id)
+                    "Exercise with name '{}' already exists in workout '{}'".format(
+                        request.json["exercise_name"], db_workout.workout_id
+                    )
                 )
             db.session.commit()
         else: # The exercise already exists and can be added to the collection
@@ -160,7 +181,9 @@ class ExercisesWithinWorkout(Resource):
                 if exercise == db_exercise:
                     return create_error_response(
                         409, "Already exists",
-                        "Exercise with name '{}' already exists in workout '{}'".format(request.json["exercise_name"], db_workout.workout_id)
+                        "Exercise with name '{}' already exists in workout '{}'".format(
+                            request.json["exercise_name"], db_workout.workout_id
+                        )
                     )
             else:
                 db_workout.exercises.append(db_exercise)
@@ -168,7 +191,11 @@ class ExercisesWithinWorkout(Resource):
                 db.session.commit()
 
         return Response(status=201, headers={
-            "Location": url_for("api.exerciseitem", workout_id=workout_id, exercise_name=exercise.exercise_name)
+            "Location": url_for(
+                "api.exerciseitem", 
+                workout_id=workout_id, 
+                exercise_name=exercise.exercise_name
+            )
         })
 
 
@@ -198,19 +225,38 @@ class ExerciseItem(Resource):
         body.add_namespace("workoutlog", LINK_RELATIONS_URL)
 
         if db_workout is not None:
-            body.add_control("self", url_for("api.exerciseitem", workout_id=workout_id, exercise_name=exercise_name))
+            body.add_control("self", url_for(
+                "api.exerciseitem", 
+                workout_id=workout_id, 
+                exercise_name=exercise_name
+                )
+            )
             body.add_control("profile", EXERCISE_PROFILE)
-            body.add_control("collection", url_for("api.exerciseswithinworkout", workout_id=workout_id))
-            body.add_control("sets-within-workout", url_for("api.sets_workouts_path", workout_id=workout_id, exercise_name=exercise_name))
+            body.add_control("collection", url_for(
+                "api.exerciseswithinworkout", 
+                workout_id=workout_id
+                )
+            )
+            body.add_control(
+                "workoutlog:sets-within-workout", url_for(
+                    "api.sets_workouts_path",
+                    workout_id=workout_id,
+                    exercise_name=exercise_name
+                    )
+                )
         else:
-            body.add_control("self", url_for("api.exerciseitem", exercise_name=exercise_name))
+            body.add_control("self", url_for(
+                "api.exerciseitem",
+                exercise_name=exercise_name
+                )
+            )
             body.add_control("profile", EXERCISE_PROFILE)
             body.add_control("collection", url_for("api.exercisecollection"))
-            body.add_control_get_workouts_by_exercise(exercise_name=exercise_name)
-        body.add_control_get_max_data_for_exercise(exercise_name=db_exercise.exercise_name)
-        body.add_control_get_weekly_programming_for_exercise(exercise_name=db_exercise.exercise_name)
+            body.add_control_get_workouts_by_exercise(exercise_name)
+        body.add_control_get_max_data_for_exercise(db_exercise.exercise_name)
+        body.add_control_get_weekly_programming_for_exercise(db_exercise.exercise_name)
         body.add_control_edit_exercise(exercise_name)
-        body.add_control_delete_exercise(exercise_name=db_exercise.exercise_name)
+        body.add_control_delete_exercise(db_exercise.exercise_name)
 
         return Response(json.dumps(body, default=str, indent=4), 200, mimetype=MASON)
 
@@ -232,7 +278,9 @@ class ExerciseItem(Resource):
         try:
             validate(request.json, Exercise.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         # Edit values that were included in the request and skip the rest
         for prop in request.json:
@@ -243,7 +291,7 @@ class ExerciseItem(Resource):
                     if len(request.json[prop]) > 100:
                         return create_error_response(400, "Exercise name too long.")
                     db_exercise.exercise_name = request.json[prop]
-                elif prop =="exercise_type":
+                elif prop == "exercise_type":
                     if len(request.json[prop]) > 100:
                         return create_error_response(400, "Exercise type too long.")
                     db_exercise.exercise_type = request.json[prop]
@@ -255,7 +303,9 @@ class ExerciseItem(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Exercise with name '{}' already exists.".format(request.json["exercise_name"])
+                "Exercise with name '{}' already exists.".format(
+                    request.json["exercise_name"]
+                )
             )
 
         return Response(status=204)

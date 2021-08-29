@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from jsonschema import validate, ValidationError
 from flask import Response, request, url_for
 from flask_restful import Resource
+from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 from workoutlog.models import Exercise, Workout
 from workoutlog import db
@@ -20,7 +21,7 @@ class WorkoutCollection(Resource):
         body.add_control_add_workout()
         
         body["items"] = []
-        for db_workout in Workout.query.all():
+        for db_workout in Workout.query.order_by(desc(Workout.date_time)).all():
             item = WorkoutLogBuilder(
                 workout_id=db_workout.workout_id,
                 date_time=db_workout.date_time.strftime('%Y-%m-%d %H:%M'),
@@ -30,9 +31,13 @@ class WorkoutCollection(Resource):
                 max_heart_rate=db_workout.max_heart_rate,
                 notes=db_workout.notes
             )
-            item.add_control("self", url_for("api.workoutitem", workout_id=db_workout.workout_id))
+            item.add_control("self", url_for(
+                "api.workoutitem", 
+                workout_id=db_workout.workout_id
+                )
+            )
             item.add_control("profile", WORKOUT_PROFILE)
-            item.add_control_get_exercises_within_workout(workout_id=db_workout.workout_id)
+            item.add_control_get_exercises_within_workout(db_workout.workout_id)
             item.add_control_edit_workout(db_workout.workout_id)
             item.add_control_delete_workout(db_workout.workout_id)
             body["items"].append(item)
@@ -48,7 +53,9 @@ class WorkoutCollection(Resource):
         try:
             validate(request.json, Workout.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         try:
             workout = Workout(
@@ -57,7 +64,7 @@ class WorkoutCollection(Resource):
         except ValueError as e:
             return create_error_response(400, "Invalid datetime. " +
                 "Datetime must match format YYYY-MM-DD HH:MM" + 
-                ", for example 2021-8-12 14:15", str(e))
+                ", for example 2021-8-21 14:15", str(e))
 
         # Iterate over nullable properties in the request and ignore
         # the KeyError request.json[] from a key missing. This way the client
@@ -66,11 +73,17 @@ class WorkoutCollection(Resource):
             try:
                 if prop =="duration":
                     try:
-                        duration_in_time = datetime.strptime(request.json["duration"], "%H:%M")
+                        duration_in_time = datetime.strptime(
+                            request.json["duration"], "%H:%M"
+                        )
                     except ValueError as e:
                         return create_error_response(400, "Invalid duration. " +
-                            "Duration must match format HH:MM, for example 1:20", str(e))
-                    duration_in_delta = timedelta(hours=duration_in_time.hour, minutes=duration_in_time.minute)
+                            "Duration must match format HH:MM, for example 1:20", str(e)
+                        )
+                    duration_in_delta = timedelta(
+                        hours=duration_in_time.hour, 
+                        minutes=duration_in_time.minute
+                    )
                     workout.duration = duration_in_delta
                 elif prop == "body_weight":
                     workout.body_weight = request.json[prop]
@@ -91,7 +104,9 @@ class WorkoutCollection(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Workout session with datetime '{}' already exists".format(request.json["date_time"])
+                "Workout session with datetime '{}' already exists".format(
+                    request.json["date_time"]
+                )
             )
 
         return Response(status=201, headers={
@@ -111,12 +126,24 @@ class WorkoutsByExercise(Resource):
 
         body = WorkoutLogBuilder()
         body.add_namespace("workoutlog", LINK_RELATIONS_URL)
-        body.add_control("self", url_for("api.workoutsbyexercise", exercise_name=exercise_name))
+        body.add_control("self", url_for(
+            "api.workoutsbyexercise",
+            exercise_name=exercise_name
+            )
+        )
         body.add_control("profile", WORKOUT_PROFILE)
-        body.add_control("up", url_for("api.exerciseitem", exercise_name=exercise_name))
+        body.add_control("up", url_for(
+            "api.exerciseitem",
+            exercise_name=exercise_name
+            )
+        )
         
         body["items"] = []
-        for db_workout in Workout.query.filter(Workout.exercises.contains(db_exercise)).all():
+        for db_workout in Workout.query.filter(
+                Workout.exercises.contains(db_exercise)
+                ).order_by(
+                desc(Workout.date_time)
+                ).all():
             item = WorkoutLogBuilder(
                 date_time=db_workout.date_time.strftime('%Y-%m-%d %H:%M'),
                 duration=strfTimedelta(db_workout.duration, "{hours}h {minutes}min"),
@@ -125,9 +152,19 @@ class WorkoutsByExercise(Resource):
                 max_heart_rate=db_workout.max_heart_rate,
                 notes=db_workout.notes
             )
-            item.add_control("self", url_for("api.workoutitem", exercise_name=exercise_name, workout_id=db_workout.workout_id))
+            item.add_control("self", url_for(
+                "api.workoutitem", 
+                exercise_name=exercise_name, 
+                workout_id=db_workout.workout_id
+                )
+            )
             item.add_control("profile", WORKOUT_PROFILE)
-            item.add_control("workoutlog:sets-within-workout", url_for("api.sets_exercises_path", exercise_name=exercise_name, workout_id=db_workout.workout_id))
+            item.add_control("workoutlog:sets-within-workout", url_for(
+                "api.sets_exercises_path", 
+                exercise_name=exercise_name, 
+                workout_id=db_workout.workout_id
+                )
+            )
             item.add_control_edit_workout(db_workout.workout_id)
             item.add_control_delete_workout(db_workout.workout_id)
             body["items"].append(item)
@@ -164,10 +201,24 @@ class WorkoutItem(Resource):
                 max_heart_rate = db_workout.max_heart_rate
             )
             body.add_namespace("workoutlog", LINK_RELATIONS_URL)
-            body.add_control("self", url_for("api.workoutitem", workout_id=workout_id, exercise_name=exercise_name))
+            body.add_control("self", url_for(
+                "api.workoutitem", 
+                workout_id=workout_id, 
+                exercise_name=exercise_name
+                )
+            )
             body.add_control("profile", WORKOUT_PROFILE)
-            body.add_control("collection", url_for("api.workoutsbyexercise", exercise_name=exercise_name))
-            body.add_control("sets-within-workout", url_for("api.sets_exercises_path", workout_id=workout_id, exercise_name=db_exercise.exercise_name))
+            body.add_control("collection", url_for(
+                "api.workoutsbyexercise",
+                exercise_name=exercise_name
+                )
+            )
+            body.add_control("sets-within-workout", url_for(
+                "api.sets_exercises_path",
+                workout_id=workout_id,
+                exercise_name=db_exercise.exercise_name
+                )
+            )
             body.add_control_edit_workout(workout_id)
             body.add_control_delete_workout(workout_id)
         # /workouts/<workout_id>/ path
@@ -208,42 +259,57 @@ class WorkoutItem(Resource):
         try:
             validate(request.json, Workout.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         # Edit values that were included in the request and skip the rest
         for prop in request.json:
             try:
                 if prop == "date_time":
                     try:
-                        date_time_string = datetime.strptime(request.json["date_time"], "%Y-%m-%d %H:%M")
+                        date_time_string = datetime.strptime(
+                            request.json["date_time"], "%Y-%m-%d %H:%M"
+                        )
                         for workout in Workout.query.all():
-                            if workout is not Workout.query.filter_by(workout_id=workout_id).first():
+                            if workout is not Workout.query.filter_by(
+                                workout_id=workout_id
+                            ).first():
                                 if workout.date_time == date_time_string:
                                     return create_error_response(
                                         409, "Already exists",
-                                        "Workout with date_time '{}' already exists".format(request.json["date_time"])
+                                        "Workout with date_time '{}' already exists".format(
+                                            request.json["date_time"]
+                                        )
                                     )
                         db_workout.date_time = date_time_string
                     except ValueError as e:
                         return create_error_response(400, "Invalid datetime." +
                             "Datetime must match format YYYY-MM-DD HH:MM" + 
-                            ", for example 2021-8-12 14:15", str(e))
+                            ", for example 2021-8-21 14:15", str(e)
+                        )
 
                 elif prop =="duration":
                     try:
-                        duration_in_time = datetime.strptime(request.json["duration"], "%H:%M")
+                        duration_in_time = datetime.strptime(
+                            request.json["duration"], "%H:%M"
+                        )
                     except ValueError as e:
                         return create_error_response(400, "Invalid duration. " +
-                            "Duration must match format HH:MM, for example 1:20", str(e))
-                    duration_in_delta = timedelta(hours=duration_in_time.hour, minutes=duration_in_time.minute)
+                            "Duration must match format HH:MM, for example 1:20", str(e)
+                        )
+                    duration_in_delta = timedelta(
+                        hours=duration_in_time.hour, 
+                        minutes=duration_in_time.minute
+                    )
                     db_workout.duration = duration_in_delta
                 elif prop == "body_weight":
                     db_workout.body_weight = request.json[prop]
-                elif prop =="average_heart_rate":
+                elif prop == "average_heart_rate":
                     db_workout.average_heart_rate = request.json[prop]
-                elif prop =="max_heart_rate":
+                elif prop == "max_heart_rate":
                     db_workout.max_heart_rate = request.json[prop]
-                elif prop =="notes":
+                elif prop == "notes":
                     if len(request.json[prop]) > 1000:
                         return create_error_response(400, "Note too long.")
                     db_workout.notes = request.json[prop]

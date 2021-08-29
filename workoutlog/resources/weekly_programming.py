@@ -33,8 +33,12 @@ class WeeklyProgrammingCollection(Resource):
                 average_heart_rate=db_weekly_programming.average_heart_rate,
                 notes=db_weekly_programming.notes
             )
-            item.add_control("self", url_for("api.weeklyprogrammingitem",
-                week_number=db_weekly_programming.week_number, exercise_type=db_weekly_programming.exercise_type))
+            item.add_control("self", url_for(
+                "api.weeklyprogrammingitem",
+                week_number=db_weekly_programming.week_number,
+                exercise_type=db_weekly_programming.exercise_type
+                )
+            )
             item.add_control("profile", WEEKLY_PROGRAMMING_PROFILE)
             item.add_control_delete_weekly_programming(
                 exercise_type=db_weekly_programming.exercise_type,
@@ -46,16 +50,7 @@ class WeeklyProgrammingCollection(Resource):
 
         return Response(json.dumps(body, indent=4), 200, mimetype=MASON)
 
-    def post(self, exercise_name=None):
-        db_exercise = None
-        if exercise_name is not None:
-            db_exercise = Exercise.query.filter_by(exercise_name=exercise_name).first()
-            if db_exercise is None:
-                return create_error_response(
-                    404, "Not found",
-                    "No data found for exercise '{}'".format(exercise_name)
-                )
-
+    def post(self):
         if not request.json:
             return create_error_response(
                 415, "Unsupported media type",
@@ -65,7 +60,9 @@ class WeeklyProgrammingCollection(Resource):
         try:
             validate(request.json, WeeklyProgramming.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
         
         if len(request.json["exercise_type"]) > 100:
             return create_error_response(400, "Exercise type too long.")
@@ -95,15 +92,17 @@ class WeeklyProgrammingCollection(Resource):
                         duration_in_time = datetime.strptime(request.json["duration"], "%H:%M")
                     except ValueError as e:
                         return create_error_response(400, "Invalid duration. " +
-                            "Duration must match format HH:MM, for example 1:20", str(e))
-                    duration_in_delta = timedelta(hours=duration_in_time.hour, minutes=duration_in_time.minute)
+                            "Duration must match format HH:MM, for example 1:20", str(e)
+                        )
+                    duration_in_delta = timedelta(
+                        hours=duration_in_time.hour,
+                        minutes=duration_in_time.minute
+                    )
                     weekly_programming.duration = duration_in_delta
                 elif prop =="distance":
                     weekly_programming.distance = request.json[prop]
                 elif prop =="average_heart_rate":
                     weekly_programming.average_heart_rate = request.json[prop]
-                elif prop =="max_heart_rate":
-                    weekly_programming.max_heart_rate = request.json[prop]
             except KeyError:
                 pass
 
@@ -113,13 +112,16 @@ class WeeklyProgrammingCollection(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Weekly programming for exercise type '{}' for week '{}' already exists.".format(request.json["exercise_type"], request.json["week_number"])
+                "Weekly programming for exercise type '{}' for week '{}' already exists.".format(
+                    request.json["exercise_type"], request.json["week_number"]
+                )
             )
 
         return Response(status=201, headers={
             "Location": url_for("api.weeklyprogrammingitem",
             exercise_type=weekly_programming.exercise_type,
-            week_number=weekly_programming.week_number)
+            week_number=weekly_programming.week_number
+            )
         })
 
 
@@ -135,11 +137,21 @@ class WeeklyProgrammingForExercise(Resource):
 
         body = WorkoutLogBuilder()
         body.add_namespace("workoutlog", LINK_RELATIONS_URL)
-        body.add_control("self", url_for("api.weeklyprogrammingforexercise", exercise_name=exercise_name))
+        body.add_control("self", url_for(
+            "api.weeklyprogrammingforexercise",
+            exercise_name=exercise_name
+            )
+        )
         body.add_control("profile", WEEKLY_PROGRAMMING_PROFILE)
-        body.add_control("up", url_for("api.exerciseitem", exercise_name=exercise_name))
+        body.add_control("up", url_for(
+            "api.exerciseitem",
+            exercise_name=exercise_name
+            )
+        )
         body["items"] = []
-        for db_weekly_programming in WeeklyProgramming.query.filter_by(exercise_type=db_exercise.exercise_type).all():
+        for db_weekly_programming in WeeklyProgramming.query.filter_by(
+            exercise_type=db_exercise.exercise_type
+        ).all():
             item = WorkoutLogBuilder(
                 week_number=db_weekly_programming.week_number,
                 exercise_type=db_weekly_programming.exercise_type,
@@ -153,11 +165,13 @@ class WeeklyProgrammingForExercise(Resource):
                 average_heart_rate=db_weekly_programming.average_heart_rate,
                 notes=db_weekly_programming.notes
             )
-            item.add_control("self", url_for("api.weeklyprogrammingitem",
+            item.add_control("self", url_for(
+                "api.weeklyprogrammingitem",
                 exercise_name=exercise_name,
                 exercise_type=db_weekly_programming.exercise_type,
                 week_number=db_weekly_programming.week_number
-                ))
+                )
+            )
             item.add_control("profile", WEEKLY_PROGRAMMING_PROFILE)
             body["items"].append(item)
 
@@ -176,7 +190,11 @@ class WeeklyProgrammingItem(Resource):
                     "No data found for exercise '{}'".format(exercise_name)
                 )
 
-        db_weekly_programming = WeeklyProgramming.query.filter_by(week_number=week_number, exercise_type=exercise_type).first()
+        db_weekly_programming = WeeklyProgramming.query.filter_by(
+            week_number=week_number,
+            exercise_type=exercise_type
+        ).first()
+
         if db_weekly_programming is None:
             return create_error_response(
                 404, "Not found",
@@ -197,10 +215,19 @@ class WeeklyProgrammingItem(Resource):
             notes=db_weekly_programming.notes
         )
         body.add_namespace("workoutlog", LINK_RELATIONS_URL)
-        body.add_control("self", url_for("api.weeklyprogrammingitem", week_number=week_number, exercise_type=exercise_type))
+        body.add_control("self", url_for(
+            "api.weeklyprogrammingitem",
+            week_number=week_number,
+            exercise_type=exercise_type
+            )
+        )
         body.add_control("profile", WEEKLY_PROGRAMMING_PROFILE)
         if db_exercise is not None:
-            body.add_control("up", url_for("api.weeklyprogrammingforexercise", exercise_name=exercise_name))
+            body.add_control("up", url_for(
+                "api.weeklyprogrammingforexercise",
+                exercise_name=exercise_name
+                )
+            )
         else:
             body.add_control("collection", url_for("api.weeklyprogrammingcollection"))
         body.add_control_edit_weekly_programming(exercise_type, week_number)
@@ -213,12 +240,13 @@ class WeeklyProgrammingItem(Resource):
         db_weekly_programming = WeeklyProgramming.query.filter_by(
             exercise_type=exercise_type,
             week_number=week_number
-            ).first()
+        ).first()
         
         if db_weekly_programming is None:
             return create_error_response(
                 404, "Not found",
-                "No weekly programming data was found for exercise type '{}' and week number '{}'".format(
+                "No weekly programming data was found for exercise type '{}' " + 
+                "and week number '{}'".format(
                     exercise_type, week_number
                 )
             )
@@ -232,7 +260,9 @@ class WeeklyProgrammingItem(Resource):
         try:
             validate(request.json, WeeklyProgramming.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         # Edit values that were included in the request and skip the rest
         for prop in request.json:
@@ -255,11 +285,17 @@ class WeeklyProgrammingItem(Resource):
                     db_weekly_programming.rate_of_perceived_exertion = request.json[prop]
                 elif prop == "duration":
                     try:
-                        duration_in_time = datetime.strptime(request.json["duration"], "%H:%M")
+                        duration_in_time = datetime.strptime(
+                            request.json["duration"], "%H:%M"
+                        )
                     except ValueError as e:
                         return create_error_response(400, "Invalid duration. " +
-                            "Duration must match format HH:MM, for example 1:20", str(e))
-                    duration_in_delta = timedelta(hours=duration_in_time.hour, minutes=duration_in_time.minute)
+                            "Duration must match format HH:MM, for example 1:20", str(e)
+                        )
+                    duration_in_delta = timedelta(
+                        hours=duration_in_time.hour,
+                        minutes=duration_in_time.minute
+                    )
                     db_weekly_programming.duration = duration_in_delta
                 elif prop =="distance":
                     db_weekly_programming.distance = request.json[prop]
@@ -275,9 +311,11 @@ class WeeklyProgrammingItem(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Weekly programming data for exercise type '{}' with the week number '{}' already exists.".format(
+                "Weekly programming data for exercise type '{}' with the week " + 
+                "number '{}' already exists.".format(
                     exercise_type,
-                    week_number)
+                    week_number
+                )
             )
 
         return Response(status=204)
@@ -287,12 +325,13 @@ class WeeklyProgrammingItem(Resource):
         db_weekly_programming = WeeklyProgramming.query.filter_by(
             exercise_type=exercise_type,
             week_number=week_number
-            ).first()
+        ).first()
 
         if db_weekly_programming is None:
             return create_error_response(
                 404, "Not found",
-                "No weekly programming data was found for exercise type '{}' and week number '{}'".format(
+                "No weekly programming data was found for exercise type '{}' " + 
+                "and week number '{}'".format(
                     exercise_type, week_number
                     )
             )

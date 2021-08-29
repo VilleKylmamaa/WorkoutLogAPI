@@ -22,8 +22,16 @@ class MaxDataForExercise(Resource):
 
         body = WorkoutLogBuilder()
         body.add_namespace("workoutlog", LINK_RELATIONS_URL)
-        body.add_control("self", url_for("api.maxdataforexercise", exercise_name=exercise_name))
-        body.add_control("up", url_for("api.exerciseitem", exercise_name=exercise_name))
+        body.add_control("self", url_for(
+            "api.maxdataforexercise",
+            exercise_name=exercise_name
+            )
+        )
+        body.add_control("up", url_for(
+            "api.exerciseitem",
+            exercise_name=exercise_name
+            )
+        )
         body.add_control_add_max_data(exercise_name)
         
         body["items"] = []
@@ -35,8 +43,12 @@ class MaxDataForExercise(Resource):
                 estimated_max=db_max_data.estimated_max,
                 tested_max=db_max_data.tested_max
             )
-            item.add_control("self", url_for("api.maxdataitem",
-             order_for_exercise=db_max_data.order_for_exercise, exercise_name=exercise_name))
+            item.add_control("self", url_for(
+                "api.maxdataitem",
+                order_for_exercise=db_max_data.order_for_exercise,
+                exercise_name=exercise_name
+                )
+            )
             item.add_control("profile", MAX_DATA_PROFILE)
             body["items"].append(item)
 
@@ -59,7 +71,9 @@ class MaxDataForExercise(Resource):
         try:
             validate(request.json, MaxData.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         # Use the order_for_exercise in the request if provided by the client
         # Otherwise generate it automatically setting it to the first available
@@ -86,7 +100,8 @@ class MaxDataForExercise(Resource):
             )
         except ValueError as e:
             return create_error_response(400, "Invalid date. " +
-                "Date must match format YYYY-MM-DD", str(e))
+                "Date must match format YYYY-MM-DD, for example 2021-8-21", str(e)
+            )
 
         # Iterate over nullable properties in the request and ignore
         # the KeyError request.json[] from a key missing. This way the client
@@ -108,13 +123,17 @@ class MaxDataForExercise(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Max data for exercise '{}' with order number '{}' already exists.".format(exercise_name, request.json["order_for_exercise"])
+                "Max data for exercise '{}' with order number '{}' " + 
+                "already exists.".format(
+                    exercise_name, request.json["order_for_exercise"]
+                )
             )
 
         return Response(status=201, headers={
             "Location": url_for("api.maxdataitem",
             exercise_name=exercise_name,
-            order_for_exercise=max_data.order_for_exercise)
+            order_for_exercise=max_data.order_for_exercise
+            )
         })
 
 
@@ -128,7 +147,10 @@ class MaxDataItem(Resource):
                 "No data found for exercise '{}'".format(exercise_name)
             )
         
-        db_max_data = MaxData.query.filter_by(exercise=db_exercise, order_for_exercise=order_for_exercise).first()
+        db_max_data = MaxData.query.filter_by(
+            exercise=db_exercise, order_for_exercise=order_for_exercise
+        ).first()
+
         if db_max_data is None:
             return create_error_response(
                 404, "Not found",
@@ -143,11 +165,20 @@ class MaxDataItem(Resource):
             tested_max=db_max_data.tested_max
         )
         body.add_namespace("workoutlog", LINK_RELATIONS_URL)
-        body.add_control("self", url_for("api.maxdataitem", order_for_exercise=order_for_exercise, exercise_name=exercise_name))
+        body.add_control("self", url_for(
+            "api.maxdataitem",
+            order_for_exercise=order_for_exercise,
+            exercise_name=exercise_name
+            )
+        )
         body.add_control("profile", MAX_DATA_PROFILE)
-        body.add_control("collection", url_for("api.maxdataforexercise", exercise_name=exercise_name))
+        body.add_control("collection", url_for(
+            "api.maxdataforexercise",
+            exercise_name=exercise_name
+            )
+        )
         body.add_control_edit_max_data(exercise_name, order_for_exercise)
-        body.add_control_delete_max_data(exercise_name=exercise_name, order_for_exercise=order_for_exercise)
+        body.add_control_delete_max_data(exercise_name, order_for_exercise)
 
         return Response(json.dumps(body, indent=4), 200, mimetype=MASON)
 
@@ -163,7 +194,7 @@ class MaxDataItem(Resource):
         db_max_data = MaxData.query.filter_by(
             exercise_id=db_exercise.id,
             order_for_exercise=order_for_exercise
-            ).first()
+        ).first()
         
         if db_max_data is None:
             return create_error_response(
@@ -182,21 +213,25 @@ class MaxDataItem(Resource):
         try:
             validate(request.json, MaxData.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         # Edit values that were included in the request and skip the rest
         for prop in request.json:
             try:
                 if prop == "order_for_exercise":
                     db_max_data.order_for_exercise = request.json[prop]
-                    order_for_exercise_for_error = request.json[prop]
+                    order_for_exercise_error = request.json[prop]
                 elif prop == "date":
                     try:
                         date_string = datetime.strptime(request.json["date"], "%Y-%m-%d")
                         db_max_data.date = date_string
                     except ValueError as e:
                         return create_error_response(400, "Invalid date. " +
-                            "Date must match format YYYY-MM-DD", str(e))
+                            "Date must match format YYYY-MM-DD, " + 
+                            "for example 2021-8-21", str(e)
+                        )
                 elif prop == "training_max":
                     db_max_data.training_max = request.json[prop]
                 elif prop =="estimated_max":
@@ -211,8 +246,10 @@ class MaxDataItem(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Max data for exercise '{}' with the order number '{}' already exists.".format(
-                    exercise_name, order_for_exercise_for_error)
+                "Max data for exercise '{}' with the order number '{}' " + 
+                "already exists.".format(
+                    exercise_name, order_for_exercise_error
+                )
             )
 
         return Response(status=204)
@@ -229,7 +266,7 @@ class MaxDataItem(Resource):
         db_max_data = MaxData.query.filter_by(
             exercise_id=db_exercise.id,
             order_for_exercise=order_for_exercise
-            ).first()
+        ).first()
         
         if db_max_data is None:
             return create_error_response(

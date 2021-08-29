@@ -33,14 +33,34 @@ class SetsWithinWorkout(Resource):
     
         path = request.endpoint
         if path == "api.sets_workouts_path":
-            body.add_control("self", url_for("api.sets_workouts_path", workout_id=workout_id, exercise_name=exercise_name))
+            body.add_control("self", url_for(
+                "api.sets_workouts_path",
+                workout_id=workout_id,
+                exercise_name=exercise_name
+                )
+            )
             body.add_control("profile", SET_PROFILE)
-            body.add_control("up", url_for("api.exerciseitem", workout_id=workout_id, exercise_name=exercise_name))
+            body.add_control("up", url_for(
+                "api.exerciseitem",
+                workout_id=workout_id,
+                exercise_name=exercise_name
+                )
+            )
             body.add_control_add_set(workout_id, exercise_name)
         elif path == "api.sets_exercises_path":
-            body.add_control("self", url_for("api.sets_exercises_path", workout_id=workout_id, exercise_name=exercise_name))
+            body.add_control("self", url_for(
+                "api.sets_exercises_path", 
+                workout_id=workout_id, 
+                exercise_name=exercise_name
+                )
+            )
             body.add_control("profile", SET_PROFILE)
-            body.add_control("up", url_for("api.workoutitem", workout_id=workout_id, exercise_name=exercise_name))
+            body.add_control("up", url_for(
+                "api.workoutitem",
+                workout_id=workout_id, 
+                exercise_name=exercise_name
+                )
+            )
             body.add_control_add_set(workout_id, exercise_name)
         
         body["items"] = []
@@ -55,11 +75,31 @@ class SetsWithinWorkout(Resource):
                 distance=db_set.distance
             )
             if path == "api.sets_workouts_path":
-                item.add_control("self", url_for("api.set_workouts_path",
-                    workout_id=workout_id, exercise_name=exercise_name, order_in_workout=db_set.order_in_workout))
+                item.add_control("self", url_for(
+                    "api.set_workouts_path",
+                    workout_id=workout_id, 
+                    exercise_name=exercise_name, 
+                    order_in_workout=db_set.order_in_workout
+                    )
+                )
+                item.add_control_delete_set_workouts_path(
+                    workout_id=db_set.workout_id,
+                    exercise_name=db_exercise.exercise_name,
+                    order_in_workout=db_set.order_in_workout
+                )
             elif path == "api.sets_exercises_path":
-                item.add_control("self", url_for("api.set_workouts_path",
-                    workout_id=workout_id, exercise_name=exercise_name, order_in_workout=db_set.order_in_workout))
+                item.add_control("self", url_for(
+                    "api.set_workouts_path",
+                    workout_id=workout_id,
+                    exercise_name=exercise_name,
+                    order_in_workout=db_set.order_in_workout
+                    )
+                )
+                item.add_control_delete_set_exercises_path(
+                    workout_id=db_set.workout_id,
+                    exercise_name=db_exercise.exercise_name,
+                    order_in_workout=db_set.order_in_workout
+                )
             item.add_control("profile", SET_PROFILE)
             body["items"].append(item)
 
@@ -121,21 +161,27 @@ class SetsWithinWorkout(Resource):
             try:
                 if prop == "weight":
                     set.weight = request.json[prop]
-                elif prop =="number_of_reps":
+                elif prop == "number_of_reps":
                     set.number_of_reps = request.json[prop]
-                elif prop =="reps_in_reserve":
+                elif prop == "reps_in_reserve":
                     set.reps_in_reserve = request.json[prop]
-                elif prop =="rate_of_perceived_exertion":
+                elif prop == "rate_of_perceived_exertion":
                     set.rate_of_perceived_exertion = request.json[prop]
-                elif prop =="duration":
+                elif prop == "duration":
                     try:
-                        duration_in_time = datetime.strptime(request.json["duration"], "%H:%M")
+                        duration_in_time = datetime.strptime(
+                            request.json["duration"], "%H:%M"
+                        )
                     except ValueError as e:
                         return create_error_response(400, "Invalid duration. " +
-                            "Duration must match format HH:MM, for example 1:20", str(e))
-                    duration_in_delta = timedelta(hours=duration_in_time.hour, minutes=duration_in_time.minute)
+                            "Duration must match format HH:MM, for example 1:20", str(e)
+                        )
+                    duration_in_delta = timedelta(
+                        hours=duration_in_time.hour, 
+                        minutes=duration_in_time.minute
+                    )
                     set.duration = duration_in_delta
-                elif prop =="distance":
+                elif prop == "distance":
                     set.distance = request.json[prop]
             except KeyError:
                 pass
@@ -146,7 +192,10 @@ class SetsWithinWorkout(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Set with order '{}' in workout '{}' for exercise '{}' already exists.".format(request.json["order_in_workout"], workout_id, exercise_name)
+                "Set with order '{}' in workout '{}' for exercise '{}' " +
+                "already exists.".format(
+                    request.json["order_in_workout"], workout_id, exercise_name
+                )
             )
 
         return Response(status=201, headers={
@@ -174,7 +223,12 @@ class SetItem(Resource):
                 "No exercise found with the name '{}'".format(exercise_name)
             )
         
-        db_set = Set.query.filter_by(workout=db_workout, exercise=db_exercise, order_in_workout=order_in_workout).first()
+        db_set = Set.query.filter_by(
+            workout=db_workout,
+            exercise=db_exercise,
+            order_in_workout=order_in_workout
+        ).first()
+
         if db_set is None:
             return create_error_response(
                 404, "Not found",
@@ -194,15 +248,47 @@ class SetItem(Resource):
 
         path = request.endpoint
         if path == "api.set_workouts_path":
-            body.add_control("self", url_for("api.set_workouts_path", workout_id=workout_id, exercise_name=exercise_name, order_in_workout=order_in_workout))
+            body.add_control("self", url_for(
+                "api.set_workouts_path",
+                workout_id=workout_id,
+                exercise_name=exercise_name,
+                order_in_workout=order_in_workout
+                )
+            )
             body.add_control("profile", SET_PROFILE)
-            body.add_control("collection", url_for("api.sets_workouts_path", workout_id=workout_id, exercise_name=exercise_name))
+            body.add_control("collection", url_for(
+                "api.sets_workouts_path",
+                workout_id=workout_id,
+                exercise_name=exercise_name
+                )
+            )
+            body.add_control_edit_set_workouts_path(
+                workout_id, exercise_name, order_in_workout
+            )
+            body.add_control_delete_set_workouts_path(
+                workout_id, exercise_name, order_in_workout
+            )
         elif path == "api.set_exercises_path":
-            body.add_control("self", url_for("api.set_exercises_path", workout_id=workout_id, exercise_name=exercise_name, order_in_workout=order_in_workout))
+            body.add_control("self", url_for(
+                "api.set_exercises_path",
+                workout_id=workout_id,
+                exercise_name=exercise_name,
+                order_in_workout=order_in_workout
+                )
+            )
             body.add_control("profile", SET_PROFILE)
-            body.add_control("collection", url_for("api.sets_exercises_path", workout_id=workout_id, exercise_name=exercise_name))
-        body.add_control_edit_set(workout_id=workout_id, exercise_name=exercise_name, order_in_workout=db_set.order_in_workout)
-        body.add_control_delete_set(workout_id=workout_id, exercise_name=exercise_name, order_in_workout=order_in_workout)
+            body.add_control("collection", url_for(
+                "api.sets_exercises_path",
+                workout_id=workout_id,
+                exercise_name=exercise_name
+                )
+            )
+            body.add_control_edit_set_exercises_path(
+                workout_id, exercise_name, order_in_workout
+            )
+            body.add_control_delete_set_exercises_path(
+                workout_id, exercise_name, order_in_workout
+            )
 
         return Response(json.dumps(body, indent=4), 200, mimetype=MASON)
 
@@ -243,7 +329,9 @@ class SetItem(Resource):
         try:
             validate(request.json, Set.get_schema())
         except ValidationError as e:
-            return create_error_response(400, "Invalid JSON document. Missing field or incorrect type.", str(e))
+            return create_error_response(400,
+                "Invalid JSON document. Missing field or incorrect type.", str(e)
+            )
 
         # Edit values that were included in the request and skip the rest
         for prop in request.json:
@@ -261,11 +349,17 @@ class SetItem(Resource):
                     db_workout.rate_of_perceived_exertion = request.json[prop]
                 elif prop == "duration":
                     try:
-                        duration_in_time = datetime.strptime(request.json["duration"], "%H:%M")
+                        duration_in_time = datetime.strptime(
+                            request.json["duration"], "%H:%M"
+                        )
                     except ValueError as e:
                         return create_error_response(400, "Invalid duration. " +
-                            "Duration must match format HH:MM, for example 1:20", str(e))
-                    duration_in_delta = timedelta(hours=duration_in_time.hour, minutes=duration_in_time.minute)
+                            "Duration must match format HH:MM, for example 1:20", str(e)
+                        )
+                    duration_in_delta = timedelta(
+                        hours=duration_in_time.hour,
+                        minutes=duration_in_time.minute
+                    )
                     db_set.duration = duration_in_delta
                 elif prop =="distance":
                     db_workout.distance = request.json[prop]
@@ -277,8 +371,10 @@ class SetItem(Resource):
         except IntegrityError:
             return create_error_response(
                 409, "Already exists",
-                "Set with the order_in_workout number '{}' in workout '{}' for exercise '{}' already exists.".format(
-                    order_in_workout_for_error, workout_id, exercise_name)
+                "Set with the order_in_workout number '{}' in workout '{}' for " +
+                "exercise '{}' already exists.".format(
+                    order_in_workout_for_error, workout_id, exercise_name
+                )
             )
 
         return Response(status=204)
@@ -295,14 +391,16 @@ class SetItem(Resource):
         db_set = Set.query.filter_by(
             workout_id=workout_id,
             exercise_id=db_exercise.id,
-            order_in_workout=order_in_workout).first()
+            order_in_workout=order_in_workout
+        ).first()
 
         if db_set is None:
             return create_error_response(
                 404, "Not found",
-                "No set was found in workout '{}' for exercise '{}' for the order number '{}'".format(
+                "No set was found in workout '{}' for exercise '{}' for the " + 
+                "order number '{}'".format(
                     workout_id, exercise_name, order_in_workout
-                    )
+                )
             )
 
         db.session.delete(db_set)
