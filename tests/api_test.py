@@ -316,6 +316,18 @@ def _check_control_post_method(ctrl, client, obj, resource):
     assert resp.status_code == 201
 
 
+
+class TestApiEntry(object):
+    
+    RESOURCE_URL = "/api/"
+
+    # test GET methods and that all methods exist for WorkoutCollection
+    def test_get(self, client):
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+
+
 class TestWorkoutCollection(object):
     
     RESOURCE_URL = "/api/workouts/"
@@ -350,6 +362,11 @@ class TestWorkoutCollection(object):
         # send same data again for 409
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 409
+
+        # test with invalid date_time format
+        valid["date_time"] = "999"
+        resp = client.post(self.RESOURCE_URL, json=valid)
+        assert resp.status_code == 400
         
         # send string over 1000 characters as notes field for 400
         long_string = ""
@@ -478,6 +495,12 @@ class TestExerciseCollection(object):
         # send same data again for 409
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 409
+
+        # remove optional exercise_type field for 201
+        valid["exercise_name"] = "new text"
+        valid.pop("exercise_type")
+        resp = client.post(self.RESOURCE_URL, json=valid)
+        assert resp.status_code == 201
 
         # send string over 100 characters as exercise_name field for 400
         long_string = ""
@@ -713,13 +736,17 @@ class TestSetsWithinWorkout(object):
       
 
 class TestSetItem(object):
-    
-    RESOURCE_URL = "/api/workouts/1/exercises/Squat/sets/1/"
-    INVALID_URL = "/api/workouts/1/exercises/Squat/sets/999/"
+
+    WORKOUTS_URL = "/api/workouts/1/exercises/Squat/sets/1/"
+    EXERCISES_URL = "/api/exercises/Squat/workouts/1/sets/1/"
+    INVALID_WORKOUTS_URL = "/api/workouts/999/exercises/Squat/sets/999/"
+    INVALID_EXERCISES_URL = "/api/workouts/1/exercises/sqwweat/sets/999/"
     
     # test GET methods all methods exist for SetItem
     def test_get(self, client):
-        resp = client.get(self.RESOURCE_URL)
+        resp = client.get(self.WORKOUTS_URL)
+        assert resp.status_code == 200
+        resp = client.get(self.EXERCISES_URL)
         assert resp.status_code == 200
         body = json.loads(resp.data)
         _check_namespace(client, body)
@@ -727,7 +754,11 @@ class TestSetItem(object):
         _check_control_get_method("collection", client, body)
         _check_control_put_method("edit", client, body, "set")
         _check_control_delete_method("workoutlog:delete", client, body)
-        resp = client.get(self.INVALID_URL)
+
+        # test invalid links
+        resp = client.get(self.WORKOUTS_URL)
+        assert resp.status_code == 404
+        resp = client.get(self.INVALID_EXERCISES_URL)
         assert resp.status_code == 404
 
     # test PUT method for SetItem
@@ -735,29 +766,30 @@ class TestSetItem(object):
         valid = _get_set_json()
         
         # test with wrong content type
-        resp = client.put(self.RESOURCE_URL, data=json.dumps(valid))
+        resp = client.put(self.WORKOUTS_URL, data=json.dumps(valid))
         assert resp.status_code == 415
         
-        resp = client.put(self.INVALID_URL, json=valid)
+        resp = client.put(self.INVALID_WORKOUTS_URL, json=valid)
         assert resp.status_code == 404
         
         # test with valid
-        resp = client.put(self.RESOURCE_URL, json=valid)
+        resp = client.put(self.WORKOUTS_URL, json=valid)
         assert resp.status_code == 204
     
     # test DELETE method for SetItem
     def test_delete(self, client):
-        resp = client.delete(self.RESOURCE_URL)
+        resp = client.delete(self.WORKOUTS_URL)
         assert resp.status_code == 204
-        resp = client.delete(self.RESOURCE_URL)
+        resp = client.delete(self.WORKOUTS_URL)
         assert resp.status_code == 404
-        resp = client.delete(self.INVALID_URL)
+        resp = client.delete(self.INVALID_WORKOUTS_URL)
         assert resp.status_code == 404     
     
 
 class TestMaxDataForExercise(object):
     
     RESOURCE_URL = "/api/exercises/Squat/max-data/"
+    INVALID_URL = "/api/exercises/sqweuurqweh/max-data/"
 
     # test GET methods and that all methods exist for MaxDataForExercise
     def test_get(self, client):
@@ -770,6 +802,8 @@ class TestMaxDataForExercise(object):
         for item in body["items"]:
             _check_control_get_method("self", client, item)
             _check_control_get_method("profile", client, item)
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
 
     # test POST method for MaxDataForExercise
     def test_post(self, client):
@@ -868,7 +902,7 @@ class TestWeeklyProgrammingCollection(object):
         # test with wrong content type
         resp = client.post(self.RESOURCE_URL, data=json.dumps(valid))
         assert resp.status_code == 415
-        
+
         # test with valid and see that it exists afterward
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 201
