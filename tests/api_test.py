@@ -414,6 +414,8 @@ class TestWorkoutItem(object):
         _check_control_get_method("collection", client, body)
         _check_control_put_method("edit", client, body, "workout")
         _check_control_delete_method("workoutlog:delete", client, body)
+
+        # test get with invalid url
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
 
@@ -608,6 +610,8 @@ class TestExerciseItem(object):
         _check_control_get_method("collection", client, body)
         _check_control_put_method("edit", client, body, "exercise")
         _check_control_delete_method("workoutlog:delete", client, body)
+
+        # test get with invalid url
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
 
@@ -802,12 +806,18 @@ class TestMaxDataForExercise(object):
         for item in body["items"]:
             _check_control_get_method("self", client, item)
             _check_control_get_method("profile", client, item)
+
+        # test get with invalid url
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
 
     # test POST method for MaxDataForExercise
     def test_post(self, client):
         valid = _get_max_data_json()
+
+        # test post with invalid url
+        resp = client.post(self.INVALID_URL, data=valid)
+        assert resp.status_code == 404
         
         # test with wrong content type
         resp = client.post(self.RESOURCE_URL, data=json.dumps(valid))
@@ -829,6 +839,12 @@ class TestMaxDataForExercise(object):
         valid.pop("order_for_exercise")
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 201
+
+        # test with invalid date format
+        valid["date"] = "111222"
+        resp = client.post(self.RESOURCE_URL, json=valid)
+        assert resp.status_code == 400
+
         
         # remove date field for 400
         valid.pop("date")
@@ -839,7 +855,8 @@ class TestMaxDataForExercise(object):
 class TestMaxDataItem(object):
     
     RESOURCE_URL = "/api/exercises/Paused%20Squat/max-data/1/"
-    INVALID_URL = "/api/exercises/Squat/max-data/999/"
+    INVALID_URL_EXERCISE = "/api/exercises/SWQEQER/max-data/1/"
+    INVALID_URL_ORDER = "/api/exercises/Squat/max-data/999/"
     
     # test GET methods all methods exist for MaxDataItem
     def test_get(self, client):
@@ -851,7 +868,11 @@ class TestMaxDataItem(object):
         _check_control_get_method("collection", client, body)
         _check_control_put_method("edit", client, body, "max_data")
         _check_control_delete_method("workoutlog:delete", client, body)
-        resp = client.get(self.INVALID_URL)
+
+        # test get with invalid urls
+        resp = client.get(self.INVALID_URL_EXERCISE)
+        assert resp.status_code == 404
+        resp = client.get(self.INVALID_URL_ORDER)
         assert resp.status_code == 404
 
     # test PUT method for MaxDataItem
@@ -862,7 +883,10 @@ class TestMaxDataItem(object):
         resp = client.put(self.RESOURCE_URL, data=json.dumps(valid))
         assert resp.status_code == 415
         
-        resp = client.put(self.INVALID_URL, json=valid)
+        # test get with invalid urls
+        resp = client.put(self.INVALID_URL_EXERCISE, json=valid)
+        assert resp.status_code == 404
+        resp = client.put(self.INVALID_URL_ORDER, json=valid)
         assert resp.status_code == 404
         
         # test with valid
@@ -875,7 +899,9 @@ class TestMaxDataItem(object):
         assert resp.status_code == 204
         resp = client.delete(self.RESOURCE_URL)
         assert resp.status_code == 404
-        resp = client.delete(self.INVALID_URL)
+        resp = client.delete(self.INVALID_URL_EXERCISE)
+        assert resp.status_code == 404
+        resp = client.delete(self.INVALID_URL_ORDER)
         assert resp.status_code == 404     
     
 
@@ -961,6 +987,8 @@ class TestWeeklyProgrammingItem(object):
         _check_control_get_method("collection", client, body)
         _check_control_put_method("edit", client, body, "weekly_programming")
         _check_control_delete_method("workoutlog:delete", client, body)
+
+        # test get with invalid url
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
 
