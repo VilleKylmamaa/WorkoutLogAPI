@@ -37,18 +37,25 @@ nav {
 }
 
 
-h1, h2 {
+h1 {
     text-align: center;
     margin-top: 30px !important;
     margin-bottom: 25px !important;
     color: rgb(239, 250, 136);
 }
 
+h2 {
+    text-align: center;
+    margin-top: 30px !important;
+    margin-bottom: 25px !important;
+    color: rgb(244, 252, 178);
+}
 
 h3 {
     text-align: center;
     margin-top: 30px !important;
-    color: rgb(242, 245, 206);
+    margin-bottom: 20px !important;
+    color: rgb(170, 253, 184);
 }
 
 h4 {

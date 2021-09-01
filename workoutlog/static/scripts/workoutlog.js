@@ -336,11 +336,10 @@ function renderWorkout(body) {
 
 function renderExercisesWithinWorkout(body) {
     let content = $(".content");
-    
     // If there are no exercises yet, render just the add exercise form
     if (body.items.length === 0) {
         content.append(
-            "<h2 id='add_exercise_title'>Add Exercise to Workout</h2>"
+            "<h3 id='add_exercise_title'>Add Exercise to Workout</h3>"
         );
         renderAddExerciseForm(
             body["@controls"]["workoutlog:add-exercise-to-workout"]
@@ -353,8 +352,8 @@ function renderExercisesWithinWorkout(body) {
                 success: function(result) {
                     let exercise_name = exercise_item.exercise_name;
                     content.append(
-                        "<h3 id='" + exercise_name.split(' ').join('_') + "_title'>"
-                        + exercise_name + "</h3>"
+                        "<h2 id='" + exercise_name.split(' ').join('_') + "_title'>"
+                        + exercise_name + "</h2>"
                     );
                     renderTableForSets(exercise_name);
                     result.items.forEach(function (set_item) {
@@ -369,7 +368,7 @@ function renderExercisesWithinWorkout(body) {
 
         $.when.apply(null, promises).done(function() {
             content.append(
-                "<h2 id='add_exercise_title'>Add Exercise to Workout</h2>"
+                "<h3 id='add_exercise_title'>Add Exercise to Workout</h3>"
             );
             renderAddExerciseForm(
                 body["@controls"]["workoutlog:add-exercise-to-workout"]
@@ -407,7 +406,8 @@ function renderWorkoutEditPage(body) {
 
     // Back button
     let link = body["@controls"].self.href;
-    content.append("<div class='text-center mt-5'><a class='btn btn-dark' " + 
+    content.append(
+        "<div class='text-center mt-5'><a class='btn btn-dark' " + 
         "href='" + link + "' onClick='followLink(event, this, renderWorkout)'>" +
         "Back to Workout</a></div>"
     );
@@ -696,13 +696,14 @@ function renderExercise(body) {
 
     // Back button
     let link = body["@controls"].collection.href;
-    content.append("<div class='text-center mt-5'><a class='btn btn-dark' " + 
+    content.append(
+        "<div class='text-center mt-5'><a class='btn btn-dark' " + 
         "href='" + link + "' onClick='followLink(event, this, renderExercises)'>" +
         "Back to Exercises</a></div>");
 
     // Exercise max data graph
     content.append("<h1>" + body.exercise_name + "</h2>")
-    content.append("<h3>Max Data Chart</h3>");
+    content.append("<h2>Max Data Chart</h2>");
     content.append("<div id='chartContainer' style='height: 370px; width: 100%;'></div>");
     getResource(
         body["@controls"]["workoutlog:max-data-for-exercise"].href,
@@ -715,7 +716,7 @@ function renderExercise(body) {
     });
 
     // Latest workouts the exercise has been trained in
-    content.append("<h3>Latest Workouts</h3>");
+    content.append("<h2>Latest Workouts</h2>");
     getResource(
         body["@controls"]["workoutlog:workouts-by-exercise"].href,
         renderWorkoutsByExercise
