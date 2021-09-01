@@ -122,6 +122,7 @@ class ExercisesWithinWorkout(Resource):
             )
             item.add_control_get_max_data_for_exercise(db_exercise.exercise_name)
             item.add_control_get_weekly_programming_for_exercise(db_exercise.exercise_name)
+            item.add_control_delete_exercise_from_workout(workout_id,db_exercise.exercise_name)
             body["items"].append(item)
 
         return Response(json.dumps(body, default=str, indent=4), 200, mimetype=MASON)
@@ -244,6 +245,10 @@ class ExerciseItem(Resource):
                     exercise_name=exercise_name
                     )
                 )
+            body.add_control_delete_exercise_from_workout(
+                db_workout.workout_id,
+                exercise_name
+                )
         else:
             body.add_control("self", url_for(
                 "api.exerciseitem",
@@ -253,10 +258,10 @@ class ExerciseItem(Resource):
             body.add_control("profile", EXERCISE_PROFILE)
             body.add_control("collection", url_for("api.exercisecollection"))
             body.add_control_get_workouts_by_exercise(exercise_name)
-        body.add_control_get_max_data_for_exercise(db_exercise.exercise_name)
-        body.add_control_get_weekly_programming_for_exercise(db_exercise.exercise_name)
+        body.add_control_get_max_data_for_exercise(exercise_name)
+        body.add_control_get_weekly_programming_for_exercise(exercise_name)
         body.add_control_edit_exercise(exercise_name)
-        body.add_control_delete_exercise(db_exercise.exercise_name)
+        body.add_control_delete_exercise(exercise_name)
 
         return Response(json.dumps(body, default=str, indent=4), 200, mimetype=MASON)
 
@@ -311,15 +316,28 @@ class ExerciseItem(Resource):
         return Response(status=204)
 
     
-    def delete(self, exercise_name):
+    def delete(self, exercise_name, workout_id=None):
+        db_workout = None
+        if workout_id is not None:
+            db_workout = Workout.query.filter_by(workout_id=workout_id).first()
+            if db_workout is None:
+                return create_error_response(
+                    404, "Not found",
+                    "No data found for workout session '{}'".format(workout_id)
+                )
+    
         db_exercise = Exercise.query.filter_by(exercise_name=exercise_name).first()
         if db_exercise is None:
             return create_error_response(
                 404, "Not found",
                 "No exercise was found with the name '{}'".format(exercise_name)
             )
-
-        db.session.delete(db_exercise)
-        db.session.commit()
+        
+        if db_workout is not None:
+            db_workout.exercises.remove(db_exercise)
+            db.session.commit()
+        else:
+            db.session.delete(db_exercise)
+            db.session.commit()
 
         return Response(status=204)
