@@ -89,7 +89,7 @@ flask testgen
 Note that the reset-db.bat file also resets the database, i.e. removes all data entries and repopulates it with test data. Useful for testing.
 
 
-6. API is now running in localhost:5000.
+6. The API is now running in localhost:5000.
 
 For the API, go to URL: 
 
