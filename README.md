@@ -54,7 +54,7 @@ source venv/bin/activate
  pip install -r requirements.txt
  ```
  
- This alone should also install the project through setup.py. If not, try updating pip to the newest version and trying again.
+ This alone should also install the project through setup.py. If not, try updating pip to the newest version.
 
 4. To run the API in localhost run the bat file:
 
