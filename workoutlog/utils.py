@@ -285,6 +285,14 @@ class WorkoutLogBuilder(MasonBuilder):
             method="DELETE",
             title="Delete this exercise"
         )
+    
+    def add_control_delete_exercise_from_workout(self, workout_id, exercise_name):
+        self.add_control(
+            "workoutlog:delete-from-workout",
+            url_for("api.exerciseitem", workout_id=workout_id, exercise_name=exercise_name),
+            method="DELETE",
+            title="Remove this exercise from this workout"
+        )
 
     def add_control_delete_set_workouts_path(self, workout_id, exercise_name, order_in_workout):
         self.add_control(
