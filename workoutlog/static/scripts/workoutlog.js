@@ -103,15 +103,16 @@ function getSubmittedExercise(data, status, jqxhr) {
 }
 
 function renderNewExercise(body) {
+    // If there are no set forms, this is the first exercise in the workout
     if ($(".set_form").length === 0) {
         $(".workouts_table").after(
-            "<h3 id='" + body.exercise_name.split(' ').join('_') + "_title'>" +
-            body.exercise_name + "</h3>"
+            "<h2 id='" + body.exercise_name.split(' ').join('_') + "_title'>" +
+            body.exercise_name + "</h2>"
             );
     } else {
         $(".set_form").last().append(
-            "<h3 id='" + body.exercise_name.split(' ').join('_') + "_title'>" +
-            body.exercise_name + "</h3>"
+            "<h2 id='" + body.exercise_name.split(' ').join('_') + "_title'>" +
+            body.exercise_name + "</h2>"
         );
     }
     renderTableForSets(body.exercise_name);
