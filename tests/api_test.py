@@ -321,7 +321,7 @@ class TestApiEntry(object):
     
     RESOURCE_URL = "/api/"
 
-    # test GET methods and that all methods exist for WorkoutCollection
+    # test GET method and that all methods exist for WorkoutCollection
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -332,7 +332,7 @@ class TestWorkoutCollection(object):
     
     RESOURCE_URL = "/api/workouts/"
 
-    # test GET methods and that all methods exist for WorkoutCollection
+    # test GET method and that all methods exist for WorkoutCollection
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -386,7 +386,7 @@ class TestWorkoutsByExercise(object):
     
     RESOURCE_URL = "/api/exercises/Squat/workouts/"
 
-    # test GET methods and that all methods exist for WorkoutsByExercise
+    # test GET method and that all methods exist for WorkoutsByExercise
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -404,7 +404,7 @@ class TestWorkoutItem(object):
     RESOURCE_URL = "/api/workouts/1/"
     INVALID_URL = "/api/workouts/42/"
     
-    # test GET methods and that all methods exist for WorkoutItem
+    # test GET method and that all methods exist for WorkoutItem
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -467,7 +467,7 @@ class TestExerciseCollection(object):
     
     RESOURCE_URL = "/api/exercises/"
 
-    # test GET methods and that all methods exist for ExerciseCollection
+    # test GET method and that all methods exist for ExerciseCollection
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -536,7 +536,7 @@ class TestExercisesWithinWorkout(object):
     
     RESOURCE_URL = "/api/workouts/1/exercises/"
 
-    # test GET methods and that all methods exist for ExercisesWithinWorkout
+    # test GET method and that all methods exist for ExercisesWithinWorkout
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -599,8 +599,9 @@ class TestExerciseItem(object):
     
     RESOURCE_URL = "/api/exercises/Squat/"
     INVALID_URL = "/api/exercises/meme/"
+    EXERCISE_WITHIN_WORKOUT_URL = "/api/workouts/1/exercises/Squat/"
     
-    # test GET methods all methods exist for ExerciseItem
+    # test GET method and that all methods exist for ExerciseItem
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -614,6 +615,17 @@ class TestExerciseItem(object):
         # test get with invalid url
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
+
+    # test GET method and that all methods exist for ExerciseItem within a workout
+    def test_get_within_workout(self, client):
+        resp = client.get(self.EXERCISE_WITHIN_WORKOUT_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("profile", client, body)
+        _check_control_get_method("collection", client, body)
+        _check_control_put_method("edit", client, body, "exercise")
+        _check_control_delete_method("workoutlog:delete-from-workout", client, body)
 
     # test PUT method for ExerciseItem
     def test_put(self, client):
@@ -675,7 +687,7 @@ class TestSetsWithinWorkout(object):
     INVALID_WORKOUTS_URL = "/api/workouts/999/exercises/Squat/sets/"
     INVALID_EXERCISES_URL = "/api/workouts/1/exercises/sqwweat/sets/"
 
-    # test GET methods and that all methods exist for SetsWithinWorkout
+    # test GET method and that all methods exist for SetsWithinWorkout
     def test_get(self, client):
         resp = client.get(self.WORKOUTS_URL)
         assert resp.status_code == 200
@@ -746,7 +758,7 @@ class TestSetItem(object):
     INVALID_WORKOUTS_URL = "/api/workouts/999/exercises/Squat/sets/999/"
     INVALID_EXERCISES_URL = "/api/workouts/1/exercises/sqwweat/sets/999/"
     
-    # test GET methods all methods exist for SetItem
+    # test GET method all methods exist for SetItem
     def test_get(self, client):
         resp = client.get(self.WORKOUTS_URL)
         assert resp.status_code == 200
@@ -795,7 +807,7 @@ class TestMaxDataForExercise(object):
     RESOURCE_URL = "/api/exercises/Squat/max-data/"
     INVALID_URL = "/api/exercises/sqweuurqweh/max-data/"
 
-    # test GET methods and that all methods exist for MaxDataForExercise
+    # test GET method and that all methods exist for MaxDataForExercise
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -858,7 +870,7 @@ class TestMaxDataItem(object):
     INVALID_URL_EXERCISE = "/api/exercises/SWQEQER/max-data/1/"
     INVALID_URL_ORDER = "/api/exercises/Squat/max-data/999/"
     
-    # test GET methods all methods exist for MaxDataItem
+    # test GET method all methods exist for MaxDataItem
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -909,7 +921,7 @@ class TestWeeklyProgrammingCollection(object):
     
     RESOURCE_URL = "/api/weekly-programming/"
 
-    # test GET methods and that all methods exist for WeeklyProgrammingCollection
+    # test GET method and that all methods exist for WeeklyProgrammingCollection
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -959,7 +971,7 @@ class TestWeeklyProgrammingForExercise(object):
     
     RESOURCE_URL = "/api/exercises/Squat/weekly-programming/"
 
-    # test GET methods and that all methods exist for ExercisesWithinWorkout
+    # test GET method and that all methods exist for WeeklyProgrammingForExercise
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -977,7 +989,7 @@ class TestWeeklyProgrammingItem(object):
     RESOURCE_URL = "/api/weekly-programming/Main%20lift/1/"
     INVALID_URL = "/api/weekly-programming/Main%20lift/999/"
     
-    # test GET methods all methods exist for WeeklyProgrammingItem
+    # test GET method all methods exist for WeeklyProgrammingItem
     def test_get(self, client):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
