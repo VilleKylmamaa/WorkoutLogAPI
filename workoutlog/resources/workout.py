@@ -67,8 +67,8 @@ class WorkoutCollection(Resource):
                 ", for example 2021-8-21 14:15", str(e))
 
         # Iterate over nullable properties in the request and ignore
-        # the KeyError request.json[] from a key missing. This way the client
-        # doesn't have to send nulls for columns it doesn't care about.
+        # the KeyError request.json[] from a missing key. This way the client
+        # doesn't have to send anything for columns it wants to keep the same.
         for prop in request.json:
             try:
                 if prop =="duration":

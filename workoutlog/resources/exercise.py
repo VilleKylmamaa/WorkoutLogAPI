@@ -3,7 +3,7 @@ from jsonschema import validate, ValidationError
 from flask import Response, request, url_for
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
-from workoutlog.models import Exercise, Workout
+from workoutlog.models import Exercise, Workout, Set
 from workoutlog import db
 from workoutlog.utils import WorkoutLogBuilder, create_error_response
 from workoutlog.constants import *
@@ -61,13 +61,12 @@ class ExerciseCollection(Resource):
             exercise_name=request.json["exercise_name"]
         )
 
-        # exercise_type is optional, pass KeyError
-        try:
-            if len(request.json["exercise_type"]) > 100:
+        # exercise_type is optional
+        exercise_type = request.json.get("exercise_type")
+        if exercise_type:
+            if len(exercise_type) > 100:
                 return create_error_response(400, "Exercise type too long.")
-            exercise.exercise_type = request.json["exercise_type"]
-        except KeyError:
-            pass
+            exercise.exercise_type = exercise_type
 
         try:
             db.session.add(exercise)
@@ -333,10 +332,12 @@ class ExerciseItem(Resource):
                 "No exercise was found with the name '{}'".format(exercise_name)
             )
         
-        if db_workout is not None:
+        if db_workout is not None: # Delete exercise from workout
+            for db_set in Set.query.filter_by(workout=db_workout, exercise=db_exercise).all():
+                db.session.delete(db_set)
             db_workout.exercises.remove(db_exercise)
             db.session.commit()
-        else:
+        else: # Delete workout form database altogether
             db.session.delete(db_exercise)
             db.session.commit()
 
