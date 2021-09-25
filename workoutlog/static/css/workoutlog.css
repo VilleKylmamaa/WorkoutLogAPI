@@ -121,6 +121,12 @@ tbody:last-child tr:last-child td:first-child {
     vertical-align: middle !important;
 }
 
+h2 > a.btn-danger {
+    vertical-align: top;
+    margin-left: 0.5em;
+    position: absolute !important;
+}
+
 form {
     color: rgb(235, 235, 235);
 }

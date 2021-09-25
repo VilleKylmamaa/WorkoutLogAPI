@@ -103,18 +103,30 @@ function getSubmittedExercise(data, status, jqxhr) {
 }
 
 function renderNewExercise(body) {
+    let delete_link = body["@controls"]["workoutlog:delete-from-workout"].href;
+
     // If there are no set forms, this is the first exercise in the workout
     if ($(".set_form").length === 0) {
         $(".workouts_table").after(
             "<h2 id='" + body.exercise_name.split(' ').join('_') + "_title'>" +
-            body.exercise_name + "</h2>"
+            body.exercise_name +
+                "<a class='btn btn-danger' " + 
+                "href='" + delete_link + "' onClick='followLink " + 
+                "(event, this, deleteExerciseFromWorkout)'>" +
+                "Delete</a>" +
+            "</h2>"
             );
     } else {
-        $(".set_form").last().append(
+        $(".set_form").last().after(
             "<h2 id='" + body.exercise_name.split(' ').join('_') + "_title'>" +
-            body.exercise_name + "</h2>"
+            body.exercise_name +
+                " <a class='btn btn-danger' " + 
+                "href='" + delete_link + "' onClick='followLink " + 
+                "(event, this, deleteExerciseFromWorkout)'>Delete</a>" +
+            "</h2>"
         );
     }
+
     renderTableForSets(body.exercise_name);
     getResource(
         body["@controls"]["workoutlog:sets-within-workout"].href,
@@ -136,8 +148,8 @@ function submitSet(event) {
 
     // Remove ID from the previous table a set was added to and
     // give ID to the correct table where the set will be appended
-    $("#new_set_target").removeAttr("id");
-    $("#" + form_id).prev().attr("id", "new_set_target");
+    $("table").removeClass("new_set_target");
+    $("#" + form_id).prev().addClass("new_set_target");
 
     sendData(form.attr("action"), form.attr("method"), data, getSubmittedSet);
 }
@@ -151,7 +163,7 @@ function getSubmittedSet(data, status, jqxhr) {
 }
 
 function appendSetRow(body) {
-    $("#new_set_target").append(setRow(body));
+    $(".new_set_target").append(setRow(body));
 }
 
 function submitMaxData(event) {
@@ -193,6 +205,25 @@ function deleteWorkout(body) {
                 renderWorkouts
             )
         });
+}
+
+function deleteExerciseFromWorkout(body) {
+    sendData(
+        body["@controls"]["workoutlog:delete-from-workout"].href,
+        body["@controls"]["workoutlog:delete-from-workout"].method
+        ).done(function() {
+            getResource(
+                body["@controls"].collection.href,
+                reRenderWorkout
+            )
+        });
+}
+
+function reRenderWorkout(body) {
+    getResource(
+        body["@controls"].up.href,
+        renderWorkout
+    )
 }
 
 function deleteSet(body) {
@@ -265,7 +296,7 @@ function workoutRow(item, switch_actions) {
 
     var delete_link = "<a href='" +
         item["@controls"]["workoutlog:delete"].href +
-        "' onClick='followLink(event, this," +
+        "' onClick='followLink(event, this, " +
         "deleteWorkout)'>delete</a>";
     
     return "<tr>" +
@@ -280,7 +311,7 @@ function workoutRow(item, switch_actions) {
 function setRow(item) {
     var delete_link = "<a href='" +
         item["@controls"]["workoutlog:delete"].href +
-        "' onClick='followLink(event, this," +
+        "' onClick='followLink(event, this, " +
         "deleteSet)'>delete</a>";
     
     return "<tr>" +
@@ -345,16 +376,22 @@ function renderExercisesWithinWorkout(body) {
         renderAddExerciseForm(
             body["@controls"]["workoutlog:add-exercise-to-workout"]
         );
-    } else {
+    } else { // There are exercises already
         let promises = [];
         body.items.forEach(function (exercise_item) {
             let request = $.ajax({
                 url: exercise_item["@controls"]["workoutlog:sets-within-workout"].href,
                 success: function(result) {
                     let exercise_name = exercise_item.exercise_name;
+                    let delete_link = exercise_item["@controls"]["workoutlog:delete-from-workout"].href;
                     content.append(
-                        "<h2 id='" + exercise_name.split(' ').join('_') + "_title'>"
-                        + exercise_name + "</h2>"
+                            "<h2 id='" + exercise_name.split(' ').join('_') +
+                            "_title'>" + exercise_name  +
+                                "<a class='btn btn-danger' " + 
+                                "href='" + delete_link + "' onClick='followLink " + 
+                                "(event, this, deleteExerciseFromWorkout)'>" +
+                                "Delete</a>" +
+                            "</h2>"
                     );
                     renderTableForSets(exercise_name);
                     result.items.forEach(function (set_item) {
@@ -366,7 +403,8 @@ function renderExercisesWithinWorkout(body) {
             });
             promises.push(request);
         });
-
+        
+        // Render add exercise form after all exercises have been rendered
         $.when.apply(null, promises).done(function() {
             content.append(
                 "<h3 id='add_exercise_title'>Add Exercise to Workout</h3>"
@@ -441,10 +479,10 @@ function renderWorkoutForm(ctrl) {
     form.append(
         "<div class='row'>" +
             "<div class='col'>" +
-                "<label for='date_time' class='form-label'>"
-                + date_time.description + "</label>" +
+                "<label for='date_time' class='form-label'>" + 
+                date_time.description + "</label>" + 
                 "<input placeholder='date and time' type='text' " + 
-                "name='date_time' class='form-control mb-2'></div>" +
+                "name='date_time' class='form-control mb-2'></div>" + 
             "<div class='col'>" +
                 "<label for='duration' class='form-label'>"
                 + duration.description + "</label>" +
