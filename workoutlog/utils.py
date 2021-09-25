@@ -339,23 +339,25 @@ class WorkoutLogBuilder(MasonBuilder):
         )
 
 
-"""
-Creates an error message in Mason format
-"""
 def create_error_response(status_code, title, message=None):
+    """
+    Creates an error message in Mason format
+    """
+    
     resource_url = request.path
     body = MasonBuilder(resource_url=resource_url)
     body.add_error(title, message)
     body.add_control("profile", href=ERROR_PROFILE)
     return Response(json.dumps(body, indent=4), status_code, mimetype=MASON)
 
-"""
-Turns timedelta object to a string for the purpose of making it JSON serializable.
-frmt should be a string with timedelta arguments given in {} brackets.
 
-Source: https://stackoverflow.com/questions/8906926/formatting-timedelta-objects
-"""
 def strfTimedelta(timedelta, frmt):
+    """
+    Turns timedelta object to a string for the purpose of making it JSON serializable.
+    frmt should be a string with timedelta arguments given in {} brackets.
+
+    Source: https://stackoverflow.com/questions/8906926/formatting-timedelta-objects
+    """
     if timedelta == None:
         return None
     else:
