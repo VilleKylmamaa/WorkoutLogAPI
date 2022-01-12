@@ -49,9 +49,9 @@ The Github Wiki contains extensive documentation which served as a course report
 
 # Installation and Running
 
-**1.** If not already installed, **install the newest version of** [**Python**](https://www.python.org/downloads/) **and** [**Pip**](https://pypi.org/project/pip/).
+**1. If not already installed, install the newest version of** [**Python**](https://www.python.org/downloads/) **and** [**Pip**](https://pypi.org/project/pip/).
 
-**2.** (Optional) **Use** [**virtual environment**](https://docs.python.org/3/tutorial/venv.html). A virtual environment is a private copy of the Python interpreter onto which you can install packages privately, without affecting the global Python interpreter installed in your system. In the root folder, to create the virtual environment, run the command:
+**2. (Optional) Use** [**virtual environment**](https://docs.python.org/3/tutorial/venv.html). A virtual environment is a private copy of the Python interpreter onto which you can install packages privately, without affecting the global Python interpreter installed in your system. In the root folder, to create the virtual environment, run the command:
 
 ```
 python -m venv venv
@@ -72,7 +72,7 @@ source venv/bin/activate
 ```
 
 
-**3. Install the project and required libraries** (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy, etc.). In the root folder, where the setup.py and requirements.txt files are located, run the following command prompt commands:
+**3. Install the project and required libraries (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy, etc.). In the root folder, where the setup.py and requirements.txt files are located, run the following command prompt commands:**
  
  ```
  pip install -r requirements.txt
@@ -80,7 +80,7 @@ source venv/bin/activate
  
  This alone should also install the project through setup.py. If not, try updating pip to the newest version.
 
-**4. To run the API in localhost** run the bat file:
+**4. To run the API in localhost run the bat file:**
 
 ```
 start-server.bat
@@ -96,7 +96,7 @@ flask run
 
 Note that the start-server.bat file doesn't open virtual environment.
 
-**5. To populate the database** run the bat file:
+**5. To populate the database run the bat file:**
 
 ```
 reset-db.bat
@@ -113,7 +113,7 @@ flask testgen
 Note that the reset-db.bat file also resets the database, i.e. removes all data entries and repopulates it with test data. Useful for testing.
 
 
-**6. The API is now running** in localhost:5000.
+**6. The API is now running in localhost:5000.**
 
 For the API, go to URL: 
 
