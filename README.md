@@ -1,10 +1,10 @@
 # Workout Log API
 
-This project is a RESTful Web API (back-end) designed to provide functionalities to build many kinds of workout logs. It offers a robust database structure to store all the useful data from workouts. The API is built with flexibility in mind and so most data columns are nullable so that the client can choose which ones to utilize. It can be used to build workout log applications for either strength/hypertrophy training or cardio training, or both.
+This project is a RESTful Web API (backend) designed to provide functionalities to build many kinds of workout logs. It offers a robust database structure to store all the useful data from workouts. The API is built with flexibility in mind and so most data columns are nullable so that the client can choose which ones to utilize. It can be used to build workout log applications for either strength/hypertrophy training or cardio training, or both.
 
 The API follows REST architecture and is implemented with Flask, is a micro web framework written in Python. The database is implemented with SQLite utilizing the SQLAlchemy database toolkit for Python. The API is designed with hypermedia as the engine of application state (HATEOAS) and a client can discover all the available resources it needs through the links provided by the API.
 
-The project also contains a workout log client (front-end) utilizing the API. The client uses the hypermedia links to find the URLs to the needed resources. It is implemented with HTML, CSS, JavaScript and jQuery.
+The project also contains a workout log client (frontend) utilizing the API. The client uses the hypermedia links to find the URLs to the needed resources. It is implemented with HTML, CSS, JavaScript and jQuery.
 
 
 <br />
