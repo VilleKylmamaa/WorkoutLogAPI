@@ -130,7 +130,7 @@ The Github Wiki contains extensive documentation which served as a course report
 
 <br />
 
-## Diagrams from the wiki:
+## Diagrams from the Wiki
 
 ### _Main Concepts Diagram_
 ![Main concepts diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/main-concepts-diagram.png)
