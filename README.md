@@ -13,7 +13,7 @@ The project also contains a workout log client (front-end) utilizing the API. Th
 
 # Documentation
 
-This project was completed as a solo project with no help from advisors during Summer 2021.
+This project was completed as a solo project for the Master's course "Programmable Web Project" in University of Oulu during Summer 2021.
 
 Apiary documentation for the API:
 
