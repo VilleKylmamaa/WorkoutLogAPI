@@ -7,51 +7,16 @@ The API follows REST architecture and is implemented with Flask, is a micro web 
 The project also contains a workout log client (front-end) utilizing the API. The client uses the hypermedia links to find the URLs to the needed resources. It is implemented with HTML, CSS, JavaScript and jQuery.
 
 
-
----
-
-
-# Documentation
-
-This project was completed as a solo project for the Master's course "Programmable Web Project" in University of Oulu during Summer 2021.
-
-Apiary documentation for the API:
-
-**https://workoutlogapi.docs.apiary.io/**
-
-The Github Wiki contains extensive documentation which served as a course report, note the wiki pages in the Report Index:
-
-**https://github.com/VilleKylmamaa/WorkoutLogAPI/wiki**
-
-## Diagrams from the wiki:
-
-### Main Concepts Diagram
-![Main concepts diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/main-concepts-diagram.png)
-
-### Database Diagram
-![Database diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/database-diagram.png)
-
-### API State Diagram
-![State diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/state-diagram.png)
-
-### Client Use Case Diagram
-![Use case diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/use-case-diagram.png)
-
-### Client Screen Workflow Design
-![Screen workflow](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/screenflow.png)
-
-### Finished Client Example Exercise Page
-![Finished client exercise page](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/client-screencaps/max-chart.jpg)
-
-
----
+<br />
 
 
 # Installation and Running
 
 **1. If not already installed, install the newest version of** [**Python**](https://www.python.org/downloads/) **and** [**Pip**](https://pypi.org/project/pip/).
 
-**2. (Optional) Use** [**virtual environment**](https://docs.python.org/3/tutorial/venv.html). A virtual environment is a private copy of the Python interpreter onto which you can install packages privately, without affecting the global Python interpreter installed in your system. In the root folder, to create the virtual environment, run the command:
+**2. (Optional) Use** [**virtual environment**](https://docs.python.org/3/tutorial/venv.html).
+
+A virtual environment is a private copy of the Python interpreter onto which you can install packages privately, without affecting the global Python interpreter installed in your system. In the root folder, to create the virtual environment, run the command:
 
 ```
 python -m venv venv
@@ -72,7 +37,9 @@ source venv/bin/activate
 ```
 
 
-**3. Install the project and required libraries (Flask, Flask-RESTful, Flask-SQLAlchemy, SQLAlchemy, etc.). In the root folder, where the setup.py and requirements.txt files are located, run the following command prompt commands:**
+**3. Install the project and required libraries (Flask, Flask-RESTful, SQLAlchemy, Flask-SQLAlchemy, etc.).**
+
+In the root folder, where the setup.py and requirements.txt files are located, run the following command prompt commands:
  
  ```
  pip install -r requirements.txt
@@ -124,7 +91,7 @@ For the client, go to URL:
 >http://localhost:5000/workoutlog/
 
 
----
+<br />
 
 
 # Running tests
@@ -146,7 +113,48 @@ pytest --cov-report term-missing --cov=workoutlog
 To run db tests individually, add in tests\db_test, or add in tests\api_test.py for api tests.
 
 
+<br />
 
+
+# Documentation
+
+This project was completed as a solo project for the Master's course "Programmable Web Project" in University of Oulu during Summer 2021.
+
+Apiary documentation for the API:
+
+**https://workoutlogapi.docs.apiary.io/**
+
+The Github Wiki contains extensive documentation which served as a course report, note the wiki pages in the Report Index:
+
+**https://github.com/VilleKylmamaa/WorkoutLogAPI/wiki**
+
+<br />
+
+## Diagrams from the wiki:
+
+### _Main Concepts Diagram_
+![Main concepts diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/main-concepts-diagram.png)
+<br /><br />
+
+### _Database Diagram_
+![Database diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/database-diagram.png)
+<br /><br />
+
+### _API State Diagram_
+![State diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/state-diagram.png)
+<br /><br />
+
+### _Client Use Case Diagram_
+![Use case diagram](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/use-case-diagram.png)
+<br /><br />
+
+### _Client Screen Workflow Design_
+![Screen workflow](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/screenflow.png)
+<br /><br />
+
+### _Finished Client Example Exercise Page_
+![Finished client exercise page](https://raw.githubusercontent.com/VilleKylmamaa/WorkoutLogAPI/main/uploads/client-screencaps/max-chart.jpg)
+<br /><br />
 
 
 
